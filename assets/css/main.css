@@ -1,0 +1,1072 @@
+/* ==========================================================================
+   KIRBY WEBSITE - MAIN STYLESHEET
+   ========================================================================== */
+
+/* ==========================================================================
+   1. FONT DEFINITIONS
+   ========================================================================== */
+
+   @font-face {
+    font-family: 'Karl';
+    src: url('../fonts/KarlST_Regular.woff2') format('woff2'),
+         url('../fonts/KarlST_Regular.woff') format('woff'),
+         url('../fonts/KarlST_Regular.otf') format('opentype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+  }
+
+  
+  /* ==========================================================================
+     2. GLOBAL RESET & BASE STYLES
+     ========================================================================== */
+  
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  /* Global typography - Karl font applied once */
+  html {
+    font-family: 'Karl', Helvetica, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+  
+  body {
+    background: #f5f5f5;
+    color: #333;
+    line-height: 1.6;
+  }
+  
+  /* ==========================================================================
+     3. LAYOUT CONTAINERS
+     ========================================================================== */
+  
+  /* Main Finder Interface */
+  .finder-interface {
+    position: relative;
+    z-index: 3;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    pointer-events: none;
+  }
+  
+  .finder-container {
+    pointer-events: auto;
+  }
+  
+  .finder-container {
+    background: #FFFFFF;
+    box-shadow: 10px 14px 14px rgba(0, 0, 0, 0.35);
+    border-radius: 24px;
+    width: 94%;
+    height: 94%;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+  }
+
+  /* Finder container slide animation */
+.finder-container {
+  transition: transform 0.5s ease, opacity 0.3s ease;
+}
+
+.finder-container.hover-effect {
+  transform: translateY(10px);
+}
+
+.finder-container.slide-down {
+  transform: translateY(calc(100vh - 9.8vh));
+  pointer-events: auto;
+}
+
+.finder-container.slide-down:hover {
+  transform: translateY(calc(100vh - 9.8vh - 10px));
+}
+
+.finder-container.slide-down.bounce-end {
+  transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.finder-container.slide-down.bounce-mid {
+  transition: transform 0.2s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+  
+  /* ==========================================================================
+     4. FINDER COMPONENTS
+     ========================================================================== */
+  
+  /* Finder Header */
+  .finder-header {
+    background: transparent;
+    border-bottom: 1px solid #E5E5E5;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+    transition: background-color 0.12s ease, transform 0.12s ease;
+    cursor: pointer;
+    will-change: transform, background-color;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+  }
+  
+  .site-title {
+    font-size: 20px;
+    font-weight: 500;
+    color: #333333;
+    cursor: pointer;
+    transition: color 0.12s ease, transform 0.12s ease;
+    will-change: transform, color;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+  }
+  
+  .site-title:hover {
+    color: #000000;
+  }
+  
+  /* Finder Main Area */
+  .finder-main {
+    flex: 1;
+    display: flex;
+    overflow: hidden;
+  }
+  
+  .finder-columns {
+    display: flex;
+    overflow-x: auto;
+    flex: 1;
+    scroll-behavior: smooth;
+    transition: scroll-left 0.4s ease;
+  }
+
+  .finder-columns::-webkit-scrollbar {
+    display: none;
+  }
+
+  .finder-columns {
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE und Edge */
+  }
+  
+  .finder-column {
+    min-width: 280px;
+    border-right: 1px solid #E5E5E5;
+    background: transparent;
+    overflow-y: auto;
+    flex-shrink: 0;
+    transition: all 0.4s ease;
+    position: relative;
+  }
+
+  .finder-column::-webkit-scrollbar {
+    display: none;
+  }
+
+  .finder-column {
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE und Edge */
+  }
+
+.finder-column.removing {
+  min-width: 0 !important;
+  opacity: 0;
+  padding-left: 0;
+  padding-right: 0;
+  border-width: 0;
+  overflow: hidden;
+  transition: all 0.4s ease;
+}
+  
+  .finder-column:last-child {
+    border-right: none;
+  }
+  
+  /* ==========================================================================
+     5. ITEM LIST STYLES
+     ========================================================================== */
+  
+  /* Path Section Styles */
+  .path-section {
+    padding: 20px;
+    border-bottom: 1px solid #E5E5E5;
+    background: #F8F8F8;
+  }
+  
+  .path-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 15px;
+  }
+  
+  .path-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 10px;
+  }
+  
+  .content-section {
+    padding: 20px;
+  }
+  
+  .content-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 15px;
+  }
+  
+  /* Finder Items */
+  .items-list {
+    padding: 0;
+    position: relative;
+    z-index: 3;
+  }
+
+  .finder-item {
+    padding: 8px 16px;
+    cursor: pointer;
+    border-bottom: 1px solid #F2F2F7;
+    transition: background-color 0.12s ease, transform 0.12s ease, color 0.12s ease;
+    position: relative;
+    overflow: hidden;
+    will-change: transform, background-color;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+}
+  
+  /* Hover-States nur auf Desktop (Geräte mit Maus) */
+  @media (hover: hover) and (pointer: fine) {
+    .finder-item:hover {
+      background-color: #00FF00;
+      transform: translateX(2px);
+      color: #000000;
+    }
+    
+    .finder-item.active-path:hover {
+      background-color: #00FF00;
+      color: #000000;
+    }
+    
+    .finder-item:hover .item-icon,
+    .finder-item:hover .svg-icon,
+    .finder-item:hover .image-thumbnail {
+      transform: scale(1.01);
+    }
+    
+    .finder-header:hover {
+      /* Kein Hintergrund mehr */
+    }
+    
+    .finder-header:hover .site-title {
+      color: #000000;
+    }
+    
+    .finder-header:hover .item-icon,
+    .finder-header:hover .svg-icon {
+      transform: scale(1.02);
+    }
+    
+    .finder-header:hover .item-name,
+    .finder-header:hover .site-title {
+      transform: scale(1.02);
+    }
+  }
+  
+  .finder-item.selected {
+    background-color: #000000;
+    color: white;
+  }
+
+  .finder-item.active-selection {
+    background-color: #d8d8d8;
+  }
+
+  /* Aktive Pfad-Elemente - zeigen den aktuellen Navigationspfad */
+  .finder-item.active-path {
+    background-color: #00FF00;
+    color: #000000;
+  }
+  
+  .item-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    position: relative;
+    z-index: 3;
+  }
+  
+  .item-details {
+    flex: 1;
+    min-width: 0;
+  }
+  
+  .item-name {
+    font-size: 20px;
+    font-weight: 500;
+    margin-bottom: 2px;
+    line-height: 1.3;
+    /* Dynamic truncation will be handled by JavaScript */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* Fallback, falls JS fehlschlägt */
+    display: block;
+    width: 100%; /* Füllt den verfügbaren Platz in der Spalte aus */
+    transition: transform 0.12s ease;
+  }
+  
+  .finder-item-title {
+    line-height: 1.3;
+    /* Dynamic truncation will be handled by JavaScript */
+    overflow: hidden;
+    white-space: nowrap;
+    max-width: 100%;
+  }
+  
+ 
+   
+  /* ==========================================================================
+     5. ICONS & VISUAL ELEMENTS
+     ========================================================================== */
+  
+  .user-icon {
+    width: 20px;
+    height: 20px;
+    color: #333333;
+    transition: transform 0.12s ease;
+  }
+  
+  .item-icon {
+    font-size: 20px;
+    flex-shrink: 0;
+    transition: transform 0.12s ease;
+    filter: drop-shadow(0px 0px 2.36px rgba(0, 0, 0, 0.22));
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    will-change: transform;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+  }
+  
+  .svg-icon {
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+    transition: transform 0.12s ease;
+    filter: drop-shadow(0px 0px 2.36px rgba(0, 0, 0, 0.22));
+    will-change: transform;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+  }
+ 
+  .image-thumbnail {
+    max-width: 40px;
+    max-height: 40px;
+    width: auto;
+    height: auto;
+    flex-shrink: 0;
+    transition: transform 0.2s ease;
+    object-fit: contain;
+    border: 2px solid #F2F2F2;
+    background: #FFFFFF;
+    box-shadow: 0px 0px 2.36px rgba(0, 0, 0, 0.22);
+  }
+  
+
+  
+  .finder-item .item-name {
+    color: #000000;
+  }
+  
+  
+  
+  /* ==========================================================================
+     6. OVERLAYS & MODALS
+     ========================================================================== */
+  
+  /* Base Overlay Styles */
+  .overlay-base {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    z-index: 1000;
+  }
+  
+  .overlay-base.active {
+    opacity: 1;
+    visibility: visible;
+  }
+  
+  /* Image Overlay */
+  .image-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.3);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  
+  .image-overlay.active {
+    display: flex !important;
+    opacity: 1;
+  }
+  
+  .image-container {
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    background: #FFFFFF;
+    box-shadow: 0px 0px 34px rgba(0, 0, 0, 0.14);
+    border-radius: 3px;
+  }
+  
+  .image-container img {
+    max-width: 93vw;
+    max-height: 93vh;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    display: block;
+    border-radius: 3px;
+  }
+ 
+  /* Text File Overlay - NEU HINZUFÜGEN */
+  .text-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.3);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  
+  .text-overlay.active {
+    display: flex !important;
+    opacity: 1;
+  }
+  
+  .text-container {
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    width: 93vw;
+    max-width: 600px; /* A4 Breite begrenzen */
+    height: calc(93vw * 1.414); /* A4 Verhältnis (1:1.414) */
+    max-height: 93vh; /* Maximal 93% der Bildschirmhöhe */
+    background: #FFFFFF;
+    box-shadow: 0px 0px 34px rgba(0, 0, 0, 0.14);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  
+ 
+   
+  /* Scrollbarer Text-Inhalt */
+  .text-content {
+    flex: 1;
+    padding: 20px;
+    font-family: 'Karl', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    color: #333;
+    overflow-y: auto;
+    background: #FFFFFF;
+  }
+  
+  /* Text content formatting */
+  .text-content h1 {
+    font-size: 30px;
+    font-weight: 600;
+    line-height: 32px;
+    margin: 0 0 20px 0;
+    color: #000000;
+  }
+  
+  .text-content h2 {
+    font-size: 26px;
+    font-weight: 600;
+    line-height: 28px;
+    margin: 20px 0 15px 0;
+    color: #000000;
+  }
+  
+  .text-content h3 {
+    font-size: 22px;
+    font-weight: 600;
+    line-height: 24px;
+    margin: 15px 0 10px 0;
+    color: #000000;
+  }
+  
+  .text-content p {
+    font-size: 20px;
+    line-height: 23px;
+    margin: 0 0 15px 0;
+  }
+
+  /* First paragraph larger styling */
+  .text-content p:first-of-type {
+    font-size: 26px;
+    line-height: 30px;
+    margin-bottom: 25px;
+    font-weight: 500;
+    text-align: center;
+  }
+
+  /* Text content links hover effect */
+  .text-content a {
+    transition: opacity 0.3s ease;
+  }
+
+  .text-content a:hover {
+    opacity: 0.6;
+  }
+  
+  .text-content p:last-child {
+    margin-bottom: 0;
+  }
+  
+  /* Hide scrollbar */
+  .text-content::-webkit-scrollbar {
+    display: none;
+  }
+  
+  .text-content {
+    -ms-overflow-style: none;  /* Internet Explorer 10+ */
+    scrollbar-width: none;  /* Firefox */
+  }
+  
+  /* Close Button - removed */
+  
+  /* Loading State - removed */
+  
+  /* Error State */
+  .text-error {
+    color: #ff0000;
+    text-align: center;
+    padding: 40px 20px;
+    font-size: 16px;
+  }
+  
+  /* About Overlay */
+.about-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: none;
+  align-items: flex-start; /* Changed from center to flex-start */
+  justify-content: center;
+  color: #FFFFFF;
+  z-index: 1;
+  background: transparent;
+  overflow-y: auto; /* Make the entire overlay scrollable */
+  overflow-x: hidden;
+  
+  /* Hide scrollbar but keep functionality */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+.about-overlay.active {
+  display: flex;
+}
+
+.about-overlay::-webkit-scrollbar {
+  display: none; /* Hide scrollbar for Webkit browsers */
+}
+
+.about-text {
+  text-align: center;
+  font-weight: 400;
+  font-size: 62px;
+  line-height: 64px;
+  color: #FFFFFF;
+  text-shadow: 0px 2px 4px rgba(0, 0, 0, 0.5);
+  max-width: 80%;
+  padding: 25vh 60px 120px 60px; /* Start content in middle of screen */
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  cursor: text;
+  user-select: text;
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+}
+
+.about-text.fade-in {
+  opacity: 1;
+}
+
+.about-text p {
+  margin: 0;
+  padding: 0;
+}
+
+.about-text p + p {
+  margin-top: 1.5em;
+}
+
+/* About text content styling */
+.about-text h1,
+.about-text h2,
+.about-text p {
+  font-size: 62px;
+  line-height: 60px;
+  font-weight: 400;
+  margin: 0;
+}
+
+.about-text .email-info {
+  font-size: 62px;
+  line-height: 60px;
+  opacity: 0.8;
+  margin: 0;
+}
+
+/* Credits text - 1/3 size of main text */
+.about-credits {
+  color: #FFFFFF;
+  font-size: 21px; /* 62px / 3 = ~21px */
+  line-height: 24px;
+  margin-top: 40px;
+  opacity: 1;
+}
+
+.about-credits p {
+  font-size: 21px !important;
+  line-height: 29px !important;
+  margin-bottom: 10px;
+}
+
+/* Hide scrollbar for about text */
+.about-text::-webkit-scrollbar {
+  display: none; /* Hide scrollbar for Webkit browsers */
+}
+  
+  /* Modal Overlay */
+  .modal-overlay {
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 1000;
+  }
+  
+  .modal-content {
+    background: white;
+    border-radius: 12px;
+    padding: 30px;
+    max-width: 800px;
+    max-height: 80vh;
+    width: 90%;
+    overflow-y: auto;
+    transform: scale(0.9);
+    transition: transform 0.3s ease;
+  }
+  
+  .modal-overlay.active .modal-content {
+    transform: scale(1);
+  }
+  
+  /* ==========================================================================
+     7. BUTTONS & INTERACTIVE ELEMENTS
+     ========================================================================== */
+  
+  .back-button {
+    background: none;
+    border: none;
+    font-weight: 500;
+    font-size: 14px;
+    line-height: 1.2;
+    color: #000000;
+    cursor: pointer;
+    padding: 0;
+    display: flex;
+    align-items: left;
+    justify-content: left;
+    transition: opacity 0.2s ease;
+  }
+  
+  .back-button:hover {
+    opacity: 0.7;
+  }
+  
+  .modal-close {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #666;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background-color 0.2s ease;
+  }
+  
+  /* ==========================================================================
+     8. UTILITY CLASSES
+     ========================================================================== */
+  
+  /* Loading States */
+  .loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    color: #fff;
+    gap: 12px;
+  }
+ 
+  /* About overlay loading state */
+ .about-overlay .loading {
+   color: #FFFFFF;
+ }
+  
+  .spinner {
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top: 2px solid #FFFFFF;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  
+  /* Empty State */
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #666;
+  }
+  
+  .empty-state-icon {
+    font-size: 64px;
+    margin-bottom: 20px;
+    opacity: 0.5;
+  }
+  
+  /* Tags */
+  .tag {
+    display: inline-block;
+    background: #007AFF;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    margin-right: 8px;
+    margin-bottom: 8px;
+  }
+  
+  /* Background Images */
+  .background-image {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    z-index: 0;
+    opacity: 0;
+  }
+
+  #backgroundImage1 {
+    opacity: 1;
+  }
+
+  .finder-hover-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 5;
+    pointer-events: none;
+    border-radius: 12px;
+    mix-blend-mode: multiply;
+  }
+
+  .x-layout-row-setup {
+    pointer-events: none;
+}
+  
+  .finder-hover-bg .hover-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-size: cover;
+    background-position: center;
+    opacity: 0;
+    transition: opacity 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    border-radius: 12px;
+    will-change: opacity;
+  }
+  
+  .finder-hover-bg .hover-layer.active {
+    opacity: 0.9;
+  }
+  
+  .finder-hover-bg .hover-layer.fade-out {
+    opacity: 0;
+    transition: opacity 0.3s cubic-bezier(0.4, 0, 1, 1);
+  }
+  
+  /* ==========================================================================
+     9. NAVIGATION COMPONENTS
+     ========================================================================== */
+  
+  .breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+  
+  .breadcrumb-item {
+    color: #007AFF;
+    text-decoration: none;
+  }
+  
+  .breadcrumb-separator {
+    color: #999;
+  }
+  
+  .breadcrumb-current {
+    color: #333;
+    font-weight: 500;
+  }
+  
+  /* ==========================================================================
+     10. ANIMATIONS
+     ========================================================================== */
+  
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  
+  /* ==========================================================================
+     11. RESPONSIVE DESIGN
+     ========================================================================== */
+  
+  /* Hide back button on desktop */
+  @media (min-width: 769px) {
+    .finder-item.finder-back-button {
+      display: none;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .finder-interface {
+      height: 100vh;
+      height: 100dvh; /* Dynamic viewport height for mobile browsers */
+      padding: 10px;
+    }
+    
+    .finder-container {
+      flex-direction: column;
+      width: 95%;
+      height: 95%;
+      overflow: hidden;
+    }
+    
+    .finder-column {
+      min-width: 100%;
+      max-width: 100%;
+      border-right: none;
+      border-bottom: none;
+      flex: 1;
+      overflow-y: auto;
+    }
+
+    .finder-column:last-child {
+      border-bottom: none;
+    }
+    
+    /* Mobile-spezifische slide-down Animation */
+    .finder-container.slide-down {
+      transform: translateY(calc(95dvh - 7vh)) !important;
+    }
+    
+    .finder-container.slide-down:hover {
+      transform: translateY(calc(95dvh - 10vh)) !important;
+    }
+    
+    .finder-header {
+      position: static;
+    }
+    
+    /* Mobile Overlay-Anpassungen für korrekte Zentrierung */
+    .image-overlay,
+    .text-overlay {
+      height: 100dvh; /* Dynamic viewport height für mobile Browser */
+      display: flex !important;
+      align-items: center; /* Vertikal zentriert */
+      justify-content: center; /* Horizontal zentriert */
+      padding: 3.5vh 2vw; /* Abstand vom oberen/unteren Rand */
+    }
+    
+    .image-container {
+      position: relative; /* Nicht absolute auf Mobile */
+      left: auto;
+      top: auto;
+      transform: none; /* Keine transform-Zentrierung nötig */
+      max-height: 90dvh; /* Maximal 90% der dynamischen Viewport-Höhe */
+      max-width: 94vw;
+    }
+    
+    .text-container {
+      position: relative; /* Nicht absolute auf Mobile */
+      left: auto;
+      top: auto;
+      transform: none; /* Keine transform-Zentrierung nötig */
+      max-height: 90dvh; /* Maximal 90% der dynamischen Viewport-Höhe */
+      width: 94vw;
+      max-width: 600px;
+      height: auto; /* Flexibel statt feste Höhe */
+      min-height: 60dvh; /* Mindesthöhe für Text */
+    }
+  }
+  
+  /* iPad spezifische Anpassungen */
+  @media (min-width: 768px) and (max-width: 1024px) {
+    .image-overlay,
+    .text-overlay {
+      padding: 5vh 4vw; /* Mehr Padding auf iPad */
+    }
+    
+    .image-container {
+      max-height: 85dvh; /* Auf iPad etwas kleiner */
+      max-width: 90vw;
+    }
+    
+    .text-container {
+      max-height: 85dvh;
+      width: 90vw;
+      max-width: 700px; /* Auf iPad größer */
+    }
+  }
+  
+  /* Mobile Finder-Item Anpassungen (innerhalb des @media mobile) */
+  @media (max-width: 767px) {
+    .finder-item {
+      padding-right: 0px; /* Kein rechtes Padding auf Mobile */
+    }
+    
+    .item-content {
+      align-items: center; /* Sicherstellen, dass Icons und Namen horizontal zentriert sind */
+      gap: 12px; /* Konsistenter Abstand zwischen Icon und Text */
+    }
+    
+    .svg-icon,
+    .item-icon,
+    .image-thumbnail {
+      flex-shrink: 0; /* Icons sollen ihre Größe behalten */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+
+    
+    /* Mobile: Erweiterte Flexbox-Unterstützung für dynamische Dateinamen */
+    .finder-item {
+      width: 100%; /* Nutze volle Spaltenbreite */
+    }
+    
+    .item-content {
+      width: 100%;
+      min-width: 0; /* Wichtig für Flexbox-Ellipsis */
+    }
+    
+    /* JavaScript wird die dynamische Ellipsis für Mobile handhaben */
+    
+    .about-text {
+      width: auto;
+      max-width: 95%;
+      font-size: 27px;
+      line-height: 29px;
+      font-weight: 400;
+      padding: 10vh 0px 120px 0px; /* Beginnt bei 90% der Browser-Höhe */
+      margin: 0;
+    }
+
+    .about-text h1,
+    .about-text h2,
+    .about-text p,
+    .about-text .email-info {
+      font-size: 27px;
+      line-height: 29px;
+    }
+  }
+  
+  /* ==========================================================================
+     12. ABOUT PAGE LINK STYLES
+     ========================================================================== */
+  
+  .about-content a,
+  .about-text a {
+    color: #FFFFFF;
+    text-decoration: underline;
+    transition: opacity 0.2s ease;
+  }
+  
+  .about-content a:hover,
+  .about-text a:hover {
+    opacity: 0.8;
+  }
+  
+  .about-content a:visited,
+  .about-text a:visited {
+    color: #FFFFFF;
+  }

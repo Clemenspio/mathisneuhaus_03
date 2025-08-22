@@ -1,0 +1,22 @@
+title: Text File
+icon: 📄
+status:
+  draft: false
+  listed: true
+create:
+  status: listed
+fields:
+  content:
+    label: Content
+    type: textarea
+    size: large
+    buttons:
+      - bold
+      - italic
+      - link
+      - ul
+      - ol
+      - h1
+      - h2
+      - h3
+    help: Write your text content here. Use H1, H2, H3 for titles. It will appear as a text file in the finder.

@@ -1,0 +1,10 @@
+title: Hover Background Image
+accept:
+  extension: jpg, jpeg, png, gif, webp, svg
+  mime: image/jpeg, image/png, image/gif, image/webp, image/svg+xml
+
+fields:
+  alt:
+    label: Alt Text
+    type: text
+    help: Description for accessibility 

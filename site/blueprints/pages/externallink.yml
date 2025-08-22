@@ -1,0 +1,18 @@
+title: External Link
+icon: 🔗
+status:
+  draft: false
+  listed: true
+create:
+  status: listed
+fields:
+  link_url:
+    label: URL
+    type: url
+    required: false
+    placeholder: https://example.com
+    help: Complete URL including https://
+  link_title:
+    label: Display Title
+    type: text
+    help: Optional - leave empty to use the page title

@@ -1,0 +1,8 @@
+title: File
+accept:
+  extension: jpg, jpeg, png, gif, webp, svg, pdf, mp3, mp4, wav, aif, aiff, doc, docx
+fields:
+  alt:
+    label: Alt Text
+    type: text
+    help: Description for accessibility

@@ -1,0 +1,12 @@
+title: Desktop Image
+accept:
+  mime: image/jpeg, image/png, image/webp
+
+fields:
+  alt:
+    label: Alt Text
+    type: text
+  
+  caption:
+    label: Caption
+    type: text

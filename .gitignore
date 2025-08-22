@@ -1,0 +1,39 @@
+# Kirby CMS .gitignore
+
+# Site files
+site/accounts/
+site/config/config.php
+site/config/config.local.php
+site/sessions/
+site/logs/
+site/cache/
+site/plugins/
+
+# Media files
+media/
+
+# Content files (exclude from git)
+content/
+
+# Composer
+/vendor/
+composer.lock
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Temporary files
+*.tmp
+*.temp

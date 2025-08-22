@@ -1,0 +1,30 @@
+title: Desktop Images
+icon: 🖼️
+
+options:
+  changeSlug: false
+  changeStatus: false
+  changeTemplate: false
+  delete: false
+  duplicate: false
+  changeTitle: false
+  preview: false
+
+status:
+  draft: true
+  unlisted: true
+  listed: false
+
+sections:
+  images:
+    type: files
+    headline: Desktop Background Images
+    layout: cards
+    size: medium
+    info: "{{ file.dimensions }} • {{ file.niceSize }}"
+    accept:
+      extension: jpg, jpeg, png, gif, webp
+    help: Upload background images for the desktop. One will be randomly selected each time the page loads. These images will NOT appear in the file browser.
+    image:
+      cover: true
+      ratio: 16/9

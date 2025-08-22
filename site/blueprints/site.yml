@@ -1,0 +1,56 @@
+title: Site
+tabs:
+  content:
+    label: Content
+    sections:
+      folders:
+        type: pages
+        label: Folders
+        status: all
+        template: folder
+        create:
+          - folder
+      textfiles:
+        type: pages
+        label: Text Files
+        status: all
+        template: textfile
+        create:
+          - textfile
+      links:
+        type: pages
+        label: External Links
+        status: all
+        template: externallink
+        create:
+          - externallink
+      files:
+        type: files
+        label: Media Files
+        layout: cards
+  contact:
+    label: Contact
+    sections:
+      about:
+        type: pages
+        label: About/Contact Information
+        template: about
+        max: 1
+        create:
+          - about
+ desktop:
+    label: Desktop Images
+    sections:
+      desktop_images_info:
+        type: info
+        text: Desktop background images are managed in a hidden page. Create or manage the page below.
+      desktop_images_page:
+        type: pages
+        label: Desktop Images Manager
+        template: desktop-images
+        parent: site
+        max: 1
+        create:
+          - desktop-images
+        status: all
+        info: "{{ page.files.count }} background images"

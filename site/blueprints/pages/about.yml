@@ -1,0 +1,15 @@
+title: About
+fields:
+  about_text:
+    label: About/Contact Text
+    type: textarea
+    size: large
+    required: true
+    buttons:
+      - link
+      - email
+  credits:
+    label: Credits
+    type: textarea
+    size: medium
+    help: Small text for credits, acknowledgments, etc. 
