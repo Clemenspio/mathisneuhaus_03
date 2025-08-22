@@ -23,22 +23,22 @@
         <!-- Hover Background within Container -->
         <div class="finder-hover-bg" id="finderHoverBg"></div>
         
-        <!-- Image Overlay -->
-        <div class="image-overlay" id="imageOverlay" onclick="hideImageOverlay()" style="display: none;">
-            <div class="image-container" onclick="event.stopPropagation()">
-                <img id="overlayImage" src="" alt="">
-            </div>
-        </div>
-
-        <!-- Text File Overlay -->
-        <div class="text-overlay" id="textOverlay" onclick="hideTextOverlay()" style="display: none;">
-            <div class="text-container" onclick="event.stopPropagation()">
-                <!-- Scrollbarer Inhalt -->
-                <div class="text-content" id="textContent">
-                    <!-- Text wird direkt geladen -->
+                        <!-- Image Overlay -->
+                <div class="image-overlay" id="imageOverlay" onclick="hideImageOverlay()" style="display: none;">
+                    <div class="image-container">
+                        <img id="overlayImage" src="" alt="">
+                    </div>
                 </div>
-            </div>
-        </div>
+
+                        <!-- Text File Overlay -->
+                <div class="text-overlay" id="textOverlay" onclick="hideTextOverlay()" style="display: none;">
+                    <div class="text-container" onclick="event.stopPropagation()">
+                        <!-- Scrollbarer Inhalt -->
+                        <div class="text-content" id="textContent">
+                            <!-- Text wird direkt geladen -->
+                        </div>
+                    </div>
+                </div>
 
         <!-- Header -->
         <div class="finder-header" onclick="toggleAboutPage()">

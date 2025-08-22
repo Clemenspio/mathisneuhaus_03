@@ -843,7 +843,7 @@ function createImageOverlay() {
     
     const container = document.createElement('div');
     container.className = 'image-container';
-    container.onclick = (e) => e.stopPropagation();
+    // Entferne stopPropagation, damit Klicks auf das Bild auch das Overlay schließen
     
     const image = document.createElement('img');
     image.id = 'overlayImage';
@@ -986,6 +986,8 @@ async function loadTextFileContent(path, title) {
         showTextOverlay(title, 'Fehler beim Laden der Datei.', path);
     }
 }
+
+
 
 function hideTextOverlay() {
     const overlay = document.getElementById('textOverlay');
