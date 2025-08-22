@@ -480,12 +480,16 @@
     z-index: 1000;
     opacity: 0;
     transition: opacity 0.3s ease;
+    pointer-events: none;
   }
   
   .text-overlay.active {
     display: flex !important;
     opacity: 1;
+    pointer-events: auto;
   }
+  
+
   
   .text-container {
     box-sizing: border-box;
@@ -577,6 +581,19 @@
   .text-content {
     -ms-overflow-style: none;  /* Internet Explorer 10+ */
     scrollbar-width: none;  /* Firefox */
+  }
+  
+  /* Mobile-spezifische Anpassungen */
+  @media (max-width: 768px) {
+    .text-overlay:not(.active) {
+      display: none !important;
+      pointer-events: none !important;
+    }
+    
+    .text-content {
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+    }
   }
   
   /* Close Button - removed */
@@ -945,13 +962,19 @@
     }
     
     /* Mobile Overlay-Anpassungen für korrekte Zentrierung */
-    .image-overlay,
-    .text-overlay {
+    .image-overlay.active,
+    .text-overlay.active {
       height: 100dvh; /* Dynamic viewport height für mobile Browser */
       display: flex !important;
       align-items: center; /* Vertikal zentriert */
       justify-content: center; /* Horizontal zentriert */
       padding: 3.5vh 2vw; /* Abstand vom oberen/unteren Rand */
+    }
+    
+    .image-overlay:not(.active),
+    .text-overlay:not(.active) {
+      display: none !important;
+      pointer-events: none !important;
     }
     
     .image-container {

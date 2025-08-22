@@ -835,9 +835,38 @@ function preloadFolderImages(items) {
     }
 }
 
+function createImageOverlay() {
+    const overlay = document.createElement('div');
+    overlay.id = 'imageOverlay';
+    overlay.className = 'image-overlay';
+    overlay.onclick = hideImageOverlay;
+    
+    const container = document.createElement('div');
+    container.className = 'image-container';
+    container.onclick = (e) => e.stopPropagation();
+    
+    const image = document.createElement('img');
+    image.id = 'overlayImage';
+    image.alt = '';
+    
+    container.appendChild(image);
+    overlay.appendChild(container);
+    document.body.appendChild(overlay);
+    
+    return overlay;
+}
+
 function showImageOverlay(imageUrl, srcset, itemPath = null) {
-    const overlay = document.getElementById('imageOverlay');
-    const image = document.getElementById('overlayImage');
+    let overlay = document.getElementById('imageOverlay');
+    let image = document.getElementById('overlayImage');
+    
+    // Falls das Element entfernt wurde, erstelle es neu
+    if (!overlay) {
+        overlay = createImageOverlay();
+    }
+    if (!image) {
+        image = document.getElementById('overlayImage');
+    }
     
     if (overlay && image) {
         // Setup overlay navigation
@@ -865,7 +894,13 @@ function hideImageOverlay() {
     const overlay = document.getElementById('imageOverlay');
     if (overlay) {
         overlay.classList.remove('active');
-        setTimeout(() => overlay.style.display = 'none', 300);
+        setTimeout(() => {
+            overlay.style.display = 'none';
+            // Entferne das Element komplett aus dem DOM auf mobilen Geräten
+            if (window.innerWidth <= 768) {
+                overlay.remove();
+            }
+        }, 300);
     }
     // Reset overlay navigation
     currentOverlayItems = [];
@@ -873,9 +908,38 @@ function hideImageOverlay() {
     overlayType = null;
 }
 
+function createTextOverlay() {
+    const overlay = document.createElement('div');
+    overlay.id = 'textOverlay';
+    overlay.className = 'text-overlay';
+    overlay.onclick = hideTextOverlay;
+    
+    const container = document.createElement('div');
+    container.className = 'text-container';
+    container.onclick = (e) => e.stopPropagation();
+    
+    const content = document.createElement('div');
+    content.className = 'text-content';
+    content.id = 'textContent';
+    
+    container.appendChild(content);
+    overlay.appendChild(container);
+    document.body.appendChild(overlay);
+    
+    return overlay;
+}
+
 function showTextOverlay(title, content, path) {
-    const overlay = document.getElementById('textOverlay');
-    const textContent = document.getElementById('textContent');
+    let overlay = document.getElementById('textOverlay');
+    let textContent = document.getElementById('textContent');
+    
+    // Falls das Element entfernt wurde, erstelle es neu
+    if (!overlay) {
+        overlay = createTextOverlay();
+    }
+    if (!textContent) {
+        textContent = document.getElementById('textContent');
+    }
     
     if (!overlay || !textContent) return;
     
@@ -927,7 +991,13 @@ function hideTextOverlay() {
     const overlay = document.getElementById('textOverlay');
     if (overlay) {
         overlay.classList.remove('active');
-        setTimeout(() => overlay.style.display = 'none', 300);
+        setTimeout(() => {
+            overlay.style.display = 'none';
+            // Entferne das Element komplett aus dem DOM auf mobilen Geräten
+            if (window.innerWidth <= 768) {
+                overlay.remove();
+            }
+        }, 300);
     }
     // Reset overlay navigation
     currentOverlayItems = [];
