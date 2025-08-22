@@ -834,9 +834,7 @@
     mix-blend-mode: multiply;
   }
 
-  .x-layout-row-setup {
-    pointer-events: none;
-}
+  
   
   .finder-hover-bg .hover-layer {
     position: absolute;
