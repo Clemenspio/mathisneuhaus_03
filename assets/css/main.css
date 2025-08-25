@@ -123,7 +123,7 @@
     left: 20px;
     right: 20px;
     height: 2px;
-    background: #D4C9C9;
+    background: #D9D9D9;
     border-radius: 1px;
   }
   
@@ -182,7 +182,7 @@
     bottom: 20px;
     right: 0;
     width: 2px;
-    background: #D4C9C9;
+    background: #D9D9D9;
     border-radius: 1px;
   }
 
@@ -254,10 +254,10 @@
   .finder-item {
     padding: 8px 16px;
     cursor: pointer;
-    transition: background-color 0.12s ease, transform 0.12s ease, color 0.12s ease;
+    transition: background-color 0.12s ease, transform 0.12s ease, color 0.12s ease, opacity 0.3s ease;
     position: relative;
     overflow: hidden;
-    will-change: transform, background-color;
+    will-change: transform, background-color, opacity;
     -webkit-backface-visibility: hidden;
     backface-visibility: hidden;
     -webkit-user-select: none;
@@ -265,7 +265,36 @@
     -ms-user-select: none;
     user-select: none;
     -webkit-touch-callout: none;
+    opacity: 1;
   }
+  
+  /* Animation nur für Items in der letzten Spalte */
+  .finder-column:last-child .finder-item {
+    opacity: 0;
+    animation: fadeInItem 0.3s ease forwards;
+  }
+  
+  /* Back-Button soll keine Animation auslösen */
+  .finder-column:last-child .finder-item.finder-back-button {
+    opacity: 1;
+    animation: none;
+  }
+  
+  .finder-column:last-child .finder-item:nth-child(1) { animation-delay: 0.05s; }
+  .finder-column:last-child .finder-item:nth-child(2) { animation-delay: 0.1s; }
+  .finder-column:last-child .finder-item:nth-child(3) { animation-delay: 0.15s; }
+  .finder-column:last-child .finder-item:nth-child(4) { animation-delay: 0.2s; }
+  .finder-column:last-child .finder-item:nth-child(5) { animation-delay: 0.25s; }
+  .finder-column:last-child .finder-item:nth-child(6) { animation-delay: 0.3s; }
+  .finder-column:last-child .finder-item:nth-child(7) { animation-delay: 0.35s; }
+  .finder-column:last-child .finder-item:nth-child(8) { animation-delay: 0.4s; }
+  .finder-column:last-child .finder-item:nth-child(9) { animation-delay: 0.45s; }
+  .finder-column:last-child .finder-item:nth-child(10) { animation-delay: 0.5s; }
+  .finder-column:last-child .finder-item:nth-child(11) { animation-delay: 0.55s; }
+  .finder-column:last-child .finder-item:nth-child(12) { animation-delay: 0.6s; }
+  .finder-column:last-child .finder-item:nth-child(13) { animation-delay: 0.65s; }
+  .finder-column:last-child .finder-item:nth-child(14) { animation-delay: 0.7s; }
+  .finder-column:last-child .finder-item:nth-child(15) { animation-delay: 0.75s; }
   
 
   
@@ -953,6 +982,17 @@
     100% { transform: rotate(360deg); }
   }
   
+  @keyframes fadeInItem {
+    0% {
+      opacity: 0;
+      transform: translateY(5px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
   /* ==========================================================================
      11. RESPONSIVE DESIGN
      ========================================================================== */
@@ -975,7 +1015,16 @@
       flex-direction: column;
       width: 95%;
       height: 95%;
+      background: #F2EEEB;
+      box-shadow: 10px 14px 14px rgba(0, 0, 0, 0.35), inset -2px 2px 2px rgba(255, 255, 255, 0.4), inset 2px -2px 2px #CFCBC7;
+      border-radius: 27px;
       overflow: hidden;
+    }
+    
+    /* Auf Mobile: Animation nur für die letzte Spalte, nicht für bestehende */
+    .finder-column:not(:last-child) .finder-item {
+      opacity: 1;
+      animation: none;
     }
     
     .finder-column {
