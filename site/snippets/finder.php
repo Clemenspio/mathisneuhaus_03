@@ -49,7 +49,8 @@
                     </div>
                 </div>
                 <div class="item-icon">
-                    <img src="/assets/icons/Mathis Neuhaus Contact.svg" alt="Mathis Neuhaus" class="svg-icon">
+                    <img src="/assets/icons/Pencil.svg" alt="Mathis Neuhaus" class="svg-icon">
+                    <img src="/assets/icons/Pencil Line.svg" alt="" class="svg-icon pencil-line">
                 </div>
             </div>
         </div>
