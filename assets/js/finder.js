@@ -227,7 +227,7 @@ async function loadPath(path) {
         }
     }
 
-    updateAllColumnsForPath();
+    updatePathIndicators();
 
     // After loading, select the first item of the last column
     if (columns.length > 0) {
@@ -424,7 +424,7 @@ async function handleItemClick(item, columnIndex) {
             addColumn(item.name, [], item.hover_thumbnail_url, item.path);
         }
 
-        updateAllColumnsForPath();
+        updatePathIndicators();
         
         // Anwendung der dynamischen Kürzung nach dem Hinzufügen einer neuen Spalte
         setTimeout(() => {
@@ -467,7 +467,7 @@ function goBack() {
         history.pushState({ path: parentPath }, '', parentPath);
 
         clickedPath.pop();
-        updateAllColumnsForPath();
+        updatePathIndicators();
         
         // Verhindere Animation beim Zurückgehen - setze alle Items in der letzten Spalte auf sichtbar
         if (columns.length > 0) {
@@ -496,7 +496,7 @@ function removeColumnsAfter(index) {
     activeItemIndex = -1;
     updateActiveSelection();
 
-    updateAllColumnsForPath();
+    updatePathIndicators();
 }
 
 // Dynamische Kürzung basierend auf verfügbarer Breite
@@ -590,6 +590,23 @@ function updateAllColumnsForPath() {
         if (itemsList) {
             renderColumnContent(itemsList, column.items, colIndex > 0, colIndex);
         }
+    });
+}
+
+// Function to update only path indicators without re-rendering items
+function updatePathIndicators() {
+    columns.forEach((column, colIndex) => {
+        const items = column.element.querySelectorAll('.finder-item.content-item');
+        items.forEach((itemElement, itemIndex) => {
+            const item = column.items[itemIndex];
+            if (item && item.type === 'folder') {
+                if (clickedPath.includes(item.path)) {
+                    itemElement.classList.add('active-path');
+                } else {
+                    itemElement.classList.remove('active-path');
+                }
+            }
+        });
     });
 }
 
@@ -1071,7 +1088,9 @@ function updateHoverFunctionality() {
 function getItemFromElement(element) {
     // Versuche das Item aus den Spalten-Daten zu finden
     for (let column of columns) {
-        const itemIndex = Array.from(column.element.querySelectorAll('.finder-item')).indexOf(element);
+        // Suche nur nach content-item (ohne Back-Button)
+        const contentItems = Array.from(column.element.querySelectorAll('.finder-item.content-item'));
+        const itemIndex = contentItems.indexOf(element);
         if (itemIndex !== -1 && column.items[itemIndex]) {
             return column.items[itemIndex];
         }
