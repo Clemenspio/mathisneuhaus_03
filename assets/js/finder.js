@@ -26,9 +26,10 @@ document.addEventListener('DOMContentLoaded', function() {
         loadRootContent();
     }
     
-    // Initiale Anwendung der dynamischen Kürzung
+    // Initiale Anwendung der dynamischen Kürzung und Hover-Funktionalität
     setTimeout(() => {
         applyTruncation();
+        updateHoverFunctionality();
     }, 100);
     
     // Add click event for background image to toggle about page
@@ -152,7 +153,10 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     // Event Listener für Fenstergrößenänderung
-    window.addEventListener('resize', debounce(applyTruncation, 150));
+    window.addEventListener('resize', debounce(() => {
+        applyTruncation();
+        updateHoverFunctionality();
+    }, 150));
 });
 
 function snapToClosestColumn(container) {
@@ -347,127 +351,41 @@ function createItemElement(item, columnIndex) {
     itemDiv.onclick = () => handleItemClick(item, columnIndex);
     
     if (item.type === 'folder' && item.hover_thumbnail_url) {
-        // Desktop: Mouse events - ANGEPASST für Cross-Fade
-        itemDiv.onmouseenter = () => {
-            // Ein geplantes Ausblenden abbrechen, falls vorhanden
-            if (hideDelayTimeout) {
-                clearTimeout(hideDelayTimeout);
-                hideDelayTimeout = null;
-            }
-            showHoverImage(item.hover_thumbnail_url);
-        };
+        // Markiere das Item als Hover-fähig für CSS-Selektoren
+        itemDiv.setAttribute('data-has-hover', 'true');
         
-        itemDiv.onmouseleave = () => {
-            // Set hover as inactive immediately when leaving item
-            isHoverActive = false;
-            
-            // Das Ausblenden mit einer kurzen Verzögerung planen
-            hideDelayTimeout = setTimeout(() => {
-                // Hide if we're still not hovering over any item
-                if (hideDelayTimeout && !isHoverActive) {
-                    hideHoverImage();
+        // Nur auf Desktop: Hover-Funktionalität aktivieren
+        if (window.innerWidth > 768) {
+            // Desktop: Mouse events - ANGEPASST für Cross-Fade
+            itemDiv.onmouseenter = () => {
+                // Ein geplantes Ausblenden abbrechen, falls vorhanden
+                if (hideDelayTimeout) {
+                    clearTimeout(hideDelayTimeout);
+                    hideDelayTimeout = null;
                 }
-                hideDelayTimeout = null;
-            }, 50); // 50ms Verzögerung für Cross-Fade
-        };
+                showHoverImage(item.hover_thumbnail_url);
+            };
+            
+            itemDiv.onmouseleave = () => {
+                // Set hover as inactive immediately when leaving item
+                isHoverActive = false;
+                
+                // Das Ausblenden mit einer kurzen Verzögerung planen
+                hideDelayTimeout = setTimeout(() => {
+                    // Hide if we're still not hovering over any item
+                    if (hideDelayTimeout && !isHoverActive) {
+                        hideHoverImage();
+                    }
+                    hideDelayTimeout = null;
+                }, 50); // 50ms Verzögerung für Cross-Fade
+            };
+        }
         
-        // Mobile: Touch events (tap and hold)
-        let touchHoldTimer = null;
-        let isHoverShowing = false;
-        let autoHideTimer = null;
-        let touchStartTime = 0;
-        let hasMoved = false;
-        
-        itemDiv.addEventListener('touchstart', (e) => {
-            // Modern approach: Use timestamps and movement detection
-            touchStartTime = Date.now();
-            hasMoved = false;
-            
-            touchHoldTimer = setTimeout(() => {
-                // Only show hover if we haven't moved and still holding
-                if (!hasMoved && Date.now() - touchStartTime >= 100) {
-                    showHoverImage(item.hover_thumbnail_url);
-                    isHoverShowing = true;
-                    // Note: showHoverImage already sets isHoverActive = true
-                    // No haptic feedback - user doesn't want it
-                    
-                    // Auto-hide after 3 seconds as fallback
-                    autoHideTimer = setTimeout(() => {
-                        if (isHoverShowing) {
-                            hideHoverImage();
-                            isHoverShowing = false;
-                        }
-                    }, 3000);
-                }
-            }, 100); // Show after 100ms hold - schneller für Mobile
-        }, { passive: true });
-        
-        itemDiv.addEventListener('touchend', (e) => {
-            const touchDuration = Date.now() - touchStartTime;
-            
-            // Always clear all timers first
-            if (touchHoldTimer) {
-                clearTimeout(touchHoldTimer);
-                touchHoldTimer = null;
-            }
-            if (autoHideTimer) {
-                clearTimeout(autoHideTimer);
-                autoHideTimer = null;
-            }
-            
-            // Always hide hover if showing
-            if (isHoverShowing) {
-                hideHoverImage();
-                isHoverShowing = false;
-                // Prevent click event if we were showing hover
-                e.preventDefault();
-                return;
-            }
-            
-            // Modern tap detection: short duration + no movement = intentional tap
-            if (!hasMoved && touchDuration < 300) { // Under 300ms = tap, not scroll
-                handleItemClick(item, columnIndex);
-            }
-            // If moved or held too long, don't open the item
-        }, { passive: false });
-        
-        // Also hide on touchcancel (when touch is interrupted)
-        itemDiv.addEventListener('touchcancel', (e) => {
-            // Clear all timers
-            if (touchHoldTimer) {
-                clearTimeout(touchHoldTimer);
-                touchHoldTimer = null;
-            }
-            if (autoHideTimer) {
-                clearTimeout(autoHideTimer);
-                autoHideTimer = null;
-            }
-            
-            if (isHoverShowing) {
-                hideHoverImage();
-                isHoverShowing = false;
-                // isHoverActive is set to false in hideHoverImage()
-            }
-        }, { passive: true });
-        
-        itemDiv.addEventListener('touchmove', (e) => {
-            // Any movement cancels intentional tap and hover
-            hasMoved = true;
-            
-            // Cancel hover on any movement
-            if (touchHoldTimer) {
-                clearTimeout(touchHoldTimer);
-                touchHoldTimer = null;
-            }
-            if (autoHideTimer) {
-                clearTimeout(autoHideTimer);
-                autoHideTimer = null;
-            }
-            if (isHoverShowing) {
-                hideHoverImage();
-                isHoverShowing = false;
-            }
-        }, { passive: true });
+        // Mobile: Keine Hover-Funktionalität - nur einfache Klicks
+        if (window.innerWidth <= 768) {
+            // Keine Touch-Events für Hover auf Mobile
+            // Nur einfache Klick-Funktionalität bleibt erhalten
+        }
     }
     
     const icon = getIcon(item.type, item);
@@ -511,6 +429,7 @@ async function handleItemClick(item, columnIndex) {
         // Anwendung der dynamischen Kürzung nach dem Hinzufügen einer neuen Spalte
         setTimeout(() => {
             applyTruncation();
+            updateHoverFunctionality();
         }, 50);
     } else if (item.type === 'externallink') {
         if (item.url) window.open(item.url, '_blank');
@@ -549,6 +468,16 @@ function goBack() {
 
         clickedPath.pop();
         updateAllColumnsForPath();
+        
+        // Verhindere Animation beim Zurückgehen - setze alle Items in der letzten Spalte auf sichtbar
+        if (columns.length > 0) {
+            const lastColumn = columns[columns.length - 1].element;
+            const items = lastColumn.querySelectorAll('.finder-item');
+            items.forEach(item => {
+                item.style.opacity = '1';
+                item.style.animation = 'none';
+            });
+        }
     }, 300); // Should match the transition duration
 }
 
@@ -1093,6 +1022,61 @@ function applyTruncation() {
         }
         truncateFilenameDynamically(item);
     });
+}
+
+// Funktion zur Aktualisierung der Hover-Funktionalität basierend auf Bildschirmgröße
+function updateHoverFunctionality() {
+    const isMobile = window.innerWidth <= 768;
+    const hoverItems = document.querySelectorAll('.finder-item[data-has-hover]');
+    
+    hoverItems.forEach(itemDiv => {
+        // Entferne alle bestehenden Event-Listener
+        itemDiv.onmouseenter = null;
+        itemDiv.onmouseleave = null;
+        
+        // Entferne alle Touch-Event-Listener
+        itemDiv.removeEventListener('touchstart', itemDiv._touchStartHandler);
+        itemDiv.removeEventListener('touchend', itemDiv._touchEndHandler);
+        itemDiv.removeEventListener('touchcancel', itemDiv._touchCancelHandler);
+        itemDiv.removeEventListener('touchmove', itemDiv._touchMoveHandler);
+        
+        if (!isMobile) {
+            // Desktop: Hover-Funktionalität aktivieren
+            const item = getItemFromElement(itemDiv);
+            if (item && item.hover_thumbnail_url) {
+                itemDiv.onmouseenter = () => {
+                    if (hideDelayTimeout) {
+                        clearTimeout(hideDelayTimeout);
+                        hideDelayTimeout = null;
+                    }
+                    showHoverImage(item.hover_thumbnail_url);
+                };
+                
+                itemDiv.onmouseleave = () => {
+                    isHoverActive = false;
+                    hideDelayTimeout = setTimeout(() => {
+                        if (hideDelayTimeout && !isHoverActive) {
+                            hideHoverImage();
+                        }
+                        hideDelayTimeout = null;
+                    }, 50);
+                };
+            }
+        }
+        // Auf Mobile: Keine Hover-Funktionalität
+    });
+}
+
+// Helper-Funktion um Item-Daten aus einem DOM-Element zu extrahieren
+function getItemFromElement(element) {
+    // Versuche das Item aus den Spalten-Daten zu finden
+    for (let column of columns) {
+        const itemIndex = Array.from(column.element.querySelectorAll('.finder-item')).indexOf(element);
+        if (itemIndex !== -1 && column.items[itemIndex]) {
+            return column.items[itemIndex];
+        }
+    }
+    return null;
 }
 
 // Debounce-Funktion zur Performance-Optimierung

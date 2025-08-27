@@ -280,6 +280,25 @@
     animation: none;
   }
   
+  /* Auf Mobile: Keine Animation für Back-Button und keine Hover-Bilder */
+  @media (max-width: 768px) {
+    /* Deaktiviere Hover-Bilder komplett auf Mobile */
+    .finder-hover-bg {
+      display: none !important;
+    }
+    
+    /* Deaktiviere Hover-Events für Ordner auf Mobile */
+    .finder-item[data-has-hover] {
+      pointer-events: auto;
+    }
+    
+    /* Back-Button soll auch auf Mobile keine Animation haben */
+    .finder-column:last-child .finder-item.finder-back-button {
+      opacity: 1;
+      animation: none;
+    }
+  }
+  
   .finder-column:last-child .finder-item:nth-child(1) { animation-delay: 0.05s; }
   .finder-column:last-child .finder-item:nth-child(2) { animation-delay: 0.1s; }
   .finder-column:last-child .finder-item:nth-child(3) { animation-delay: 0.15s; }
