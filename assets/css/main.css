@@ -683,8 +683,13 @@
   /* Mobile-spezifische Anpassungen */
   @media (max-width: 768px) {
     .text-overlay:not(.active) {
-      display: none !important;
+      opacity: 0;
       pointer-events: none !important;
+    }
+    
+    .text-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
     }
     
     .text-content {
@@ -1099,11 +1104,12 @@
       align-items: center; /* Vertikal zentriert */
       justify-content: center; /* Horizontal zentriert */
       padding: 3.5vh 2vw; /* Abstand vom oberen/unteren Rand */
+      opacity: 1;
     }
     
     .image-overlay:not(.active),
     .text-overlay:not(.active) {
-      display: none !important;
+      opacity: 0;
       pointer-events: none !important;
     }
     

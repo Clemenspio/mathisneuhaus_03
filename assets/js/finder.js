@@ -431,8 +431,14 @@ async function handleItemClick(item, columnIndex) {
             applyTruncation();
             updateHoverFunctionality();
         }, 50);
-    } else if (item.type === 'externallink') {
-        if (item.url) window.open(item.url, '_blank');
+    } else if (item.type === 'externallink' || item.type === 'document') {
+        // Externe Links und PDFs in neuem Tab öffnen
+        if (item.url) {
+            window.open(item.url, '_blank');
+        } else if (item.path) {
+            // Falls kein URL vorhanden ist, verwende den Pfad
+            window.open(item.path, '_blank');
+        }
     } else if (item.type === 'textfile') {
         loadTextFileContent(item.path, item.name);
     } else if (item.type === 'image' && item.url) {
@@ -843,7 +849,8 @@ function hideImageOverlay() {
         setTimeout(() => {
             overlay.style.display = 'none';
             // Entferne das Element komplett aus dem DOM auf mobilen Geräten
-            if (window.innerWidth <= 768) {
+            // ABER nur wenn es nicht mehr benötigt wird
+            if (window.innerWidth <= 768 && !overlay.classList.contains('active')) {
                 overlay.remove();
             }
         }, 300);
@@ -942,7 +949,8 @@ function hideTextOverlay() {
         setTimeout(() => {
             overlay.style.display = 'none';
             // Entferne das Element komplett aus dem DOM auf mobilen Geräten
-            if (window.innerWidth <= 768) {
+            // ABER nur wenn es nicht mehr benötigt wird
+            if (window.innerWidth <= 768 && !overlay.classList.contains('active')) {
                 overlay.remove();
             }
         }, 300);
