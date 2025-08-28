@@ -87,7 +87,10 @@ Das komplexe Herzstück mit 1288 Zeilen Code:
 
 #### **Performance-Optimierungen**
 - **Dynamische Textkürzung** basierend auf verfügbarer Breite
-- **Preloading** von Bildern und Hover-Images
+- **Intelligentes Preloading** von Bildern und Hover-Images
+- **Responsive Image Loading** mit optimalen Größen pro Viewport
+- **Anti-Flicker Navigation** - nahtlose Spalten-Übergänge
+- **Optimierte Thumbnails** (80px für 40px Anzeige)
 - **Debounced Window Resize** Events
 - **Memory-optimierte DOM-Manipulation**
 
@@ -104,6 +107,26 @@ Das komplexe Herzstück mit 1288 Zeilen Code:
 - [x] **Kirby 5.0 Integration** - Neueste CMS-Version
 - [x] **Custom Font Integration** - Karl Font für einheitliches Design
 - [x] **Enhanced API Routes** - Erweiterte Backend-Funktionalität
+
+### ✅ Performance-Optimierungen (August 2025)
+- [x] **Anti-Flicker Navigation** - Spalten-Wechsel ohne visuelles Flackern
+- [x] **About-Scroll Reset** - Automatisches Zurücksetzen der Scroll-Position (on-open)
+- [x] **Optimierte Thumbnails** - 80px statt 300px für 40px Anzeige (75% weniger Daten)
+- [x] **Responsive Overlay-Images** - Intelligente Bildgrößen basierend auf Viewport
+- [x] **Enhanced Hover-Preloading** - Vorwegnahme von Hover- und Overlay-Bildern (nur Desktop)
+- [x] **Smart Item-Sortierung** - Textdateien oben, alphabetische Sortierung
+- [x] **80% Inset Hover-Images** - Optional kleinere Hover-Bilder ohne Border
+- [x] **Große Bild-Optimierung** - Automatische Größenanpassung für 5MB+ Dateien
+
+### ✅ Bug-Fixes & Weitere Optimierungen (August 2025)
+- [x] **Green Highlight Bug** - Korrekte active-path Verwaltung behoben
+- [x] **Intelligentes Preloading** - Nur notwendige Bilder werden vorgeladen
+- [x] **Asynchrones Loading** - UI öffnet sofort, Preloading erfolgt im Hintergrund
+- [x] **4G Performance** - Gedrosseltes, gestaffeltes Laden für langsame Verbindungen
+- [x] **Network Monitoring** - Debugging-Tools für Performance-Analyse
+- [x] **Mobile Hover-Caching Fix** - Hover-Bilder werden auf Mobile nicht mehr geladen
+- [x] **Text-Overlay Mobile Fix** - Sofortiges Loading und korrekte Größe
+- [x] **Blueprint Cleanup** - Entfernung der inherit hover image Option
 
 ### ✅ Bestehende Features (Erweitert)
 - [x] Multi-Column Finder Navigation
@@ -178,4 +201,32 @@ composer start
 
 Die Website ist ein hochentwickeltes, production-ready Portfolio-System mit professionellen UX-Standards und optimaler Performance für alle Geräte.
 
-**Letzte Aktualisierung**: Januar 2025
+## 🔄 Performance-Updates (August 2025)
+
+### Behobene Probleme:
+1. **Spalten-Flackern eliminiert** - Navigation erfolgt jetzt nahtlos ohne visuelle Unterbrechungen
+2. **About-Seite Scroll-Reset** - Scroll-Position wird beim Öffnen automatisch zurückgesetzt
+3. **Thumbnail-Optimierung** - 75% weniger Datenverbrauch durch 80px statt 300px Thumbnails
+4. **Responsive Overlay-Images** - Bilder werden optimal für aktuelles Viewport geladen
+5. **Enhanced Hover-Performance** - Proaktives Preloading von Hover-Images (nur Desktop)
+6. **Intelligente Sortierung** - Textdateien werden priorisiert, alphabetische Ordnung
+7. **Green Highlight Bug** - Mehrfache grüne Markierungen in derselben Ebene behoben
+8. **4G Performance** - Massive Verbesserung durch intelligentes, gestaffeltes Preloading
+9. **80% Inset Hover-Option** - Optionale kleinere Hover-Bilder ohne Border-Frame
+10. **Große Datei-Optimierung** - Automatische Größenanpassung für Bilder >5MB
+11. **Mobile Hover-Caching Fix** - Hover-Bilder werden auf Mobile nicht mehr unnötig geladen
+12. **Text-Overlay Mobile Fixes** - Sofortiges Loading mit korrekter Container-Größe
+
+### Technische Details:
+- **Fetch-before-Remove Pattern** für flicker-freie Navigation
+- **Viewport-basierte Bildgrößen** mit Device Pixel Ratio
+- **Optimiertes Thumbnail-Srcset** für kleine Darstellungen
+- **Smart Preloading-Strategien** für bessere Responsezeiten (Desktop-only)
+- **Corrected State Management** für konsistente active-path Anzeige
+- **Asynchronous Image Loading** mit priorisierten Batches
+- **Network-Aware Loading** mit Connection API für optimale Performance
+- **Throttled Preloading** (3+7 Bilder gestaffelt über 500ms+200ms)
+- **Adaptive Image Loading** für große Dateien (800px/1200px/1920px je nach Viewport)
+- **Mobile-First Optimizations** (keine Hover-Preloads, optimierte Container-Größen)
+
+**Letzte Aktualisierung**: 28. August 2025

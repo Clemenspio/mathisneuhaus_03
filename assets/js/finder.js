@@ -326,10 +326,7 @@ function addColumn(title, items, hoverImageUrl = null, path = null) {
     const parentColumnIndex = activeColumnIndex;
     columns.push({ title, items, element: column, hoverImageUrl, path });
 
-    // Preload all images in this folder
-    preloadFolderImages(items);
-
-    // "Docking" scroll logic
+    // "Docking" scroll logic - immediate UI update
     requestAnimationFrame(() => {
         const targetScrollLeft = column.offsetLeft;
         columnsContainer.scrollTo({
@@ -337,6 +334,11 @@ function addColumn(title, items, hoverImageUrl = null, path = null) {
             behavior: 'smooth'
         });
     });
+
+    // Asynchronous preloading - doesn't block UI
+    setTimeout(() => {
+        preloadFolderImages(items);
+    }, 100); // Small delay to ensure UI is responsive first
 }
 
 // Create item element
@@ -363,7 +365,7 @@ function createItemElement(item, columnIndex) {
                     clearTimeout(hideDelayTimeout);
                     hideDelayTimeout = null;
                 }
-                showHoverImage(item.hover_thumbnail_url);
+                showHoverImage(item.hover_thumbnail_url, item.hover_image_inset);
             };
             
             itemDiv.onmouseleave = () => {
@@ -405,23 +407,28 @@ function createItemElement(item, columnIndex) {
 // Handle item clicks
 async function handleItemClick(item, columnIndex) {
     hideHoverImage();
-    removeColumnsAfter(columnIndex);
 
     if (item.type === 'folder') {
-        clickedPath = columns.map(col => col.path).filter(Boolean);
-        if (!clickedPath.includes(item.path)) {
-            clickedPath.push(item.path);
-        }
-
         history.pushState({ path: item.path }, '', item.path);
 
         try {
             const response = await fetch(`/api/content${item.path}`);
             const data = await response.json();
+            
+            // Remove columns AFTER successful data fetch to prevent flickering
+            removeColumnsAfter(columnIndex);
             addColumn(item.name, data.items || [], item.hover_thumbnail_url, item.path);
+            
+            // Update clickedPath based on current columns after removal/addition
+            clickedPath = columns.map(col => col.path).filter(Boolean);
         } catch (error) {
             console.error('Failed to load folder:', error);
+            // Remove columns and add empty column even on error
+            removeColumnsAfter(columnIndex);
             addColumn(item.name, [], item.hover_thumbnail_url, item.path);
+            
+            // Update clickedPath based on current columns after removal/addition
+            clickedPath = columns.map(col => col.path).filter(Boolean);
         }
 
         updatePathIndicators();
@@ -441,8 +448,30 @@ async function handleItemClick(item, columnIndex) {
         }
     } else if (item.type === 'textfile') {
         loadTextFileContent(item.path, item.name);
-    } else if (item.type === 'image' && item.url) {
-        showImageOverlay(item.url, item.srcset, item.path);
+    } else if (item.type === 'image') {
+        // Intelligent image selection for large files
+        let optimizedUrl = item.url;
+        let optimizedSrcset = item.srcset;
+        
+        if (item.is_large_image && item.optimized_small) {
+            // For large images (>5MB), start with optimized version
+            const viewportWidth = window.innerWidth;
+            const devicePixelRatio = window.devicePixelRatio || 1;
+            const effectiveWidth = viewportWidth * devicePixelRatio;
+            
+            if (effectiveWidth <= 1000) {
+                optimizedUrl = item.optimized_small; // 800px version for small screens
+                console.log(`Loading optimized small version for large image (${(item.file_size / 1024 / 1024).toFixed(1)}MB)`);
+            } else if (effectiveWidth <= 1500) {
+                optimizedUrl = item.optimized_medium; // 1200px version for medium screens
+                console.log(`Loading optimized medium version for large image (${(item.file_size / 1024 / 1024).toFixed(1)}MB)`);
+            } else {
+                optimizedUrl = item.optimized_large; // 1920px version for large screens
+                console.log(`Loading optimized large version for large image (${(item.file_size / 1024 / 1024).toFixed(1)}MB)`);
+            }
+        }
+        
+        showImageOverlay(optimizedUrl, optimizedSrcset, item.path);
     } else if (item.url) {
         window.open(item.url, '_blank');
     }
@@ -574,7 +603,8 @@ function truncateInMiddle(text, maxLength) {
 // Get icon for item type
 function getIcon(type, item) {
     if (type === 'image' && item.url) {
-        return `<img src="${item.thumbnail || item.url}" srcset="${item.srcset || ''}" sizes="40px" alt="${item.name}" class="image-thumbnail">`;
+        // Use optimized thumbnail for small display with proper srcset
+        return `<img src="${item.thumbnail || item.url}" alt="${item.name}" class="image-thumbnail">`;
     }
     
     const icons = {
@@ -659,7 +689,7 @@ let hideDelayTimeout = null; // Neue Variable für verzögertes Ausblenden
 let isHoverActive = false; // Flag to track hover state
 let pendingCleanupTimeouts = new Set(); // Track all cleanup timeouts
 
-function showHoverImage(imageUrl) {
+function showHoverImage(imageUrl, isInset = false) {
     const hoverBg = document.getElementById('finderHoverBg');
     
     // Clear ALL pending timeouts to prevent interference
@@ -675,6 +705,16 @@ function showHoverImage(imageUrl) {
     // Set hover as active immediately
     isHoverActive = true;
     
+    // Store previous inset state before changing
+    const wasInset = hoverBg.classList.contains('inset');
+    
+    // Toggle inset class based on isInset parameter
+    if (isInset) {
+        hoverBg.classList.add('inset');
+    } else {
+        hoverBg.classList.remove('inset');
+    }
+    
     // Ensure we have two layers for cross-fade
     if (hoverBg.children.length === 0) {
         hoverBg.innerHTML = '<div class="hover-layer"></div><div class="hover-layer"></div>';
@@ -689,9 +729,16 @@ function showHoverImage(imageUrl) {
         const activeLayer = layer1.classList.contains('active') ? layer1 : layer2;
         const inactiveLayer = activeLayer === layer1 ? layer2 : layer1;
         
+        // If switching between different inset modes, preserve old layer's positioning
+        if (wasInset !== isInset) {
+            // Mark the old layer to keep its original positioning during fade-out
+            activeLayer.setAttribute('data-preserve-inset', wasInset ? 'true' : 'false');
+        }
+        
         // Prepare the new layer
         inactiveLayer.classList.remove('fade-out');
         inactiveLayer.style.backgroundImage = `url('${imageUrl}')`;
+        inactiveLayer.removeAttribute('data-preserve-inset'); // New layer uses current mode
         
         // Start cross-fade immediately
         inactiveLayer.classList.add('active');
@@ -702,6 +749,7 @@ function showHoverImage(imageUrl) {
         const cleanupTimeoutId = setTimeout(() => {
             activeLayer.classList.remove('fade-out');
             activeLayer.style.backgroundImage = '';
+            activeLayer.removeAttribute('data-preserve-inset'); // Clean up after fade
             pendingCleanupTimeouts.delete(cleanupTimeoutId);
         }, 550); // Synchron mit CSS transition (500ms + buffer)
         
@@ -739,11 +787,14 @@ function hideHoverImage() {
     // Set hover as inactive immediately
     isHoverActive = false;
     
+    // Store the current inset state before any cleanup
+    const wasInset = hoverBg.classList.contains('inset');
+    
     // Clear all cleanup timeouts - we're taking control now
     pendingCleanupTimeouts.forEach(timeoutId => clearTimeout(timeoutId));
     pendingCleanupTimeouts.clear();
     
-    // Fade out all active layers
+    // Fade out all active layers BUT keep inset class during fade
     for (let layer of layers) {
         if (layer.classList.contains('active')) {
             layer.classList.add('fade-out');
@@ -751,7 +802,7 @@ function hideHoverImage() {
         }
     }
     
-    // Clean up after animation completes
+    // Clean up after animation completes - but DON'T remove inset class during fade-out
     hoverTimeout = setTimeout(() => {
         // Only clean up if hover is still inactive (no new hover started)
         if (!isHoverActive) {
@@ -760,6 +811,10 @@ function hideHoverImage() {
                 layer.style.backgroundImage = '';
             }
             currentHoverImage = null;
+            // ONLY remove inset class if we were inset AND all layers are truly cleaned
+            if (wasInset) {
+                hoverBg.classList.remove('inset');
+            }
         }
         hoverTimeout = null;
     }, 550); // 50ms mehr als CSS transition (500ms) für saubere Koordination
@@ -768,22 +823,61 @@ function hideHoverImage() {
 // Preload all images in a folder for faster switching
 function preloadFolderImages(items) {
     const imageItems = items.filter(item => item.type === 'image' && item.url);
+    const hoverItems = items.filter(item => item.type === 'folder' && item.hover_thumbnail_url);
     
-    // Limit preloading to avoid overwhelming the browser
-    const maxPreload = 10;
-    const imagesToPreload = imageItems.slice(0, maxPreload);
+    // Only preload if there are actually images to preload
+    if (hoverItems.length === 0 && imageItems.length === 0) {
+        return; // No images to preload, exit early
+    }
     
-    imagesToPreload.forEach(item => {
-        const img = new Image();
-        img.src = item.url;
-        if (item.srcset) {
-            img.srcset = item.srcset;
-        }
-        // Images werden im Browser Cache gespeichert für spätere Verwendung
-    });
+    // Priority 1: Preload hover images ONLY on desktop (not mobile - they don't exist functionally)
+    if (hoverItems.length > 0 && window.innerWidth > 768) {
+        hoverItems.forEach(item => {
+            if (item.hover_thumbnail_url) {
+                const hoverImg = new Image();
+                hoverImg.src = item.hover_thumbnail_url;
+            }
+        });
+    }
     
+    // Priority 2: Preload overlay images with intelligent throttling
     if (imageItems.length > 0) {
-        console.log(`Preloading ${Math.min(imagesToPreload.length, imageItems.length)} images from folder`);
+        // Throttled preloading to prevent network congestion
+        const preloadBatch = 3; // Start with 3 images
+        const maxPreload = Math.min(10, imageItems.length);
+        
+        // Immediate batch
+        imageItems.slice(0, preloadBatch).forEach(item => {
+            const img = new Image();
+            img.src = item.thumbnail || item.url; // Prefer thumbnails for faster loading
+        });
+        
+        // Delayed batch for full resolution images
+        if (imageItems.length > preloadBatch) {
+            setTimeout(() => {
+                imageItems.slice(preloadBatch, maxPreload).forEach((item, index) => {
+                    setTimeout(() => {
+                        const img = new Image();
+                        img.src = item.url;
+                        if (item.srcset) {
+                            img.srcset = item.srcset;
+                        }
+                    }, index * 200); // Stagger loading by 200ms
+                });
+            }, 500); // Wait 500ms before starting full resolution preload
+        }
+    }
+    
+    if (imageItems.length > 0 || hoverItems.length > 0) {
+        const startTime = performance.now();
+        const hoverCount = (window.innerWidth > 768) ? hoverItems.length : 0;
+        console.log(`Smart preloading: ${hoverCount} hover images (desktop only), ${Math.min(imageItems.length, 10)} overlay images (throttled)`);
+        
+        // Performance monitoring for debugging
+        if (navigator.connection) {
+            const connection = navigator.connection;
+            console.log(`Network: ${connection.effectiveType}, Downlink: ${connection.downlink}Mbps, RTT: ${connection.rtt}ms`);
+        }
     }
 }
 
@@ -824,12 +918,25 @@ function showImageOverlay(imageUrl, srcset, itemPath = null) {
         // Setup overlay navigation
         setupOverlayNavigation('image', itemPath);
         
+        // Calculate optimal image size based on viewport
+        const viewportWidth = window.innerWidth;
+        const viewportHeight = window.innerHeight;
+        const devicePixelRatio = window.devicePixelRatio || 1;
+        
+        // Use 90% of viewport for overlay, considering device pixel ratio
+        const targetWidth = Math.floor(viewportWidth * 0.9 * devicePixelRatio);
+        const targetHeight = Math.floor(viewportHeight * 0.9 * devicePixelRatio);
+        
+        // Intelligent sizes attribute for responsive loading
+        const sizes = `(max-width: 768px) 90vw, (max-width: 1200px) 80vw, 70vw`;
+        
         // Preload das neue Bild
         const newImage = new Image();
         newImage.onload = function() {
             // Erst wenn das neue Bild geladen ist, ersetzen wir das alte
             image.src = imageUrl;
             image.srcset = srcset || '';
+            image.sizes = sizes;
             overlay.style.display = 'flex';
             setTimeout(() => overlay.classList.add('active'), 10);
         };
@@ -838,6 +945,12 @@ function showImageOverlay(imageUrl, srcset, itemPath = null) {
         newImage.src = imageUrl;
         if (srcset) {
             newImage.srcset = srcset;
+            newImage.sizes = sizes;
+        }
+        
+        // Log for debugging responsive loading
+        if (console && console.log) {
+            console.log(`Loading overlay image for ${targetWidth}x${targetHeight}px viewport (${devicePixelRatio}x DPR)`);
         }
     }
 }
@@ -925,19 +1038,61 @@ function displayTextContent(content) {
 }
 
 async function loadTextFileContent(path, title) {
+    // Check cache first
+    if (textFileCache.has(path)) {
+        console.log(`Loading text from cache: ${path}`);
+        showTextOverlay(title, textFileCache.get(path), path);
+        return;
+    }
+    
+    // Show overlay immediately with loading state
+    showTextOverlayWithLoading(title, path);
+    
+    const startTime = performance.now();
+    
     try {
         const response = await fetch(`/api/textfile-content${path}`);
         const data = await response.json();
         
+        const loadTime = performance.now() - startTime;
+        console.log(`Text file loaded in ${loadTime.toFixed(2)}ms: ${path}`);
+        
         if (data.status === 'ok' && data.content) {
+            // Cache the content
+            textFileCache.set(path, data.content);
             showTextOverlay(title, data.content, path);
         } else {
             showTextOverlay(title, 'Fehler beim Laden der Datei.', path);
         }
     } catch (error) {
-        console.error('Failed to load text file:', error);
+        const loadTime = performance.now() - startTime;
+        console.error(`Failed to load text file after ${loadTime.toFixed(2)}ms:`, error);
         showTextOverlay(title, 'Fehler beim Laden der Datei.', path);
     }
+}
+
+function showTextOverlayWithLoading(title, path) {
+    let overlay = document.getElementById('textOverlay');
+    let textContent = document.getElementById('textContent');
+    
+    // Falls das Element entfernt wurde, erstelle es neu
+    if (!overlay) {
+        overlay = createTextOverlay();
+    }
+    if (!textContent) {
+        textContent = document.getElementById('textContent');
+    }
+    
+    if (!overlay || !textContent) return;
+    
+    // Setup overlay navigation
+    setupOverlayNavigation('text', path);
+    
+    // Show loading state immediately - ensure full height and proper centering
+    textContent.innerHTML = '<div style="display: flex; align-items: center; justify-content: center; min-height: 100%; height: 100%; text-align: center; font-size: 16px; color: #666; position: absolute; top: 0; left: 0; right: 0; bottom: 0; padding: 20px;">Loading...</div>';
+    
+    overlay.style.display = 'flex';
+    setTimeout(() => overlay.classList.add('active'), 10);
 }
 
 
@@ -977,6 +1132,19 @@ function showAboutPage() {
     const aboutOverlay = document.getElementById('aboutOverlay');
     const aboutText = document.getElementById('aboutText');
     
+    // Reset scroll position before showing (ensures it's always at top)
+    if (aboutOverlay) {
+        console.log('About scroll before reset:', aboutOverlay.scrollTop);
+        aboutOverlay.scrollTop = 0;
+        console.log('About scroll after reset:', aboutOverlay.scrollTop);
+        
+        // Force scroll reset with requestAnimationFrame for reliability
+        requestAnimationFrame(() => {
+            aboutOverlay.scrollTop = 0;
+            console.log('About scroll after RAF reset:', aboutOverlay.scrollTop);
+        });
+    }
+    
     document.body.style.overflow = 'hidden';
     finderContainer.classList.add('slide-down');
     aboutOverlay.style.display = 'flex';
@@ -998,12 +1166,33 @@ function hideAboutPage() {
     aboutOverlay.classList.remove('active');
     finderContainer.classList.remove('slide-down');
     
-    setTimeout(() => aboutOverlay.style.display = 'none', 300);
+    setTimeout(() => {
+        aboutOverlay.style.display = 'none';
+    }, 300);
     loadBackgroundImage();
 }
 
+// Cache for about content to avoid reloading
+let aboutContentCache = null;
+
+// Cache for text file content to avoid reloading
+let textFileCache = new Map();
+
 async function loadAboutContent() {
     const aboutText = document.getElementById('aboutText');
+    
+    // Show simple loading text immediately - responsive sizing
+    const isMobile = window.innerWidth <= 768;
+    const fontSize = isMobile ? '32px' : '62px';
+    const lineHeight = isMobile ? '34px' : '64px';
+    aboutText.innerHTML = `<div style="text-align: center; padding: 25vh 0; font-size: ${fontSize}; line-height: ${lineHeight}; color: #FFFFFF; opacity: 0.6;">Loading...</div>`;
+    
+    // Use cached content if available
+    if (aboutContentCache) {
+        aboutText.innerHTML = aboutContentCache;
+        return;
+    }
+    
     try {
         const response = await fetch('/api/about');
         const data = await response.json();
@@ -1015,7 +1204,8 @@ async function loadAboutContent() {
             content = content.replace(/\(email:\s*([^\s]+)\s+text:\s*([^)]+)\)/gi, '<a href="mailto:$1" style="color: #FFFFFF; text-decoration: underline; text-underline-offset: 8px;">$2</a>');
             content = content.replace(/\(link:\s*([^\s]+)\s+text:\s*([^)]+)\)/gi, '<a href="$1" style="color: #FFFFFF; text-decoration: underline;" target="_blank">$2</a>');
             content = content.replace(/\n\n/g, '</p><p>').replace(/\n/g, '<br>');
-            aboutText.innerHTML = `<p>${content}</p>`;
+            
+            let finalContent = `<p>${content}</p>`;
             
             // Add credits if available
             if (data.credits && data.credits.trim() !== '') {
@@ -1026,8 +1216,12 @@ async function loadAboutContent() {
                 credits = credits.replace(/\(email:\s*([^\s]+)\s+text:\s*([^)]+)\)/gi, '<a href="mailto:$1" style="color: #FFFFFF; text-decoration: underline; text-underline-offset: 8px;">$2</a>');
                 credits = credits.replace(/\(link:\s*([^\s]+)\s+text:\s*([^)]+)\)/gi, '<a href="$1" style="color: #FFFFFF; text-decoration: underline;" target="_blank">$2</a>');
                 credits = credits.replace(/\n\n/g, '</p><p>').replace(/\n/g, '<br>');
-                aboutText.innerHTML += `<div class="about-credits"><p>${credits}</p></div>`;
+                finalContent += `<div class="about-credits"><p>${credits}</p></div>`;
             }
+            
+            // Cache the content and display it
+            aboutContentCache = finalContent;
+            aboutText.innerHTML = finalContent;
         } else {
             aboutText.innerHTML = 'About information not available.';
         }
@@ -1074,7 +1268,7 @@ function updateHoverFunctionality() {
                         clearTimeout(hideDelayTimeout);
                         hideDelayTimeout = null;
                     }
-                    showHoverImage(item.hover_thumbnail_url);
+                    showHoverImage(item.hover_thumbnail_url, item.hover_image_inset);
                 };
                 
                 itemDiv.onmouseleave = () => {

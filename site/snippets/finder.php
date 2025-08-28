@@ -10,10 +10,7 @@
 <!-- About Overlay -->
 <div class="about-overlay" id="aboutOverlay" style="display: none;">
     <div class="about-text" id="aboutText">
-        <div class="loading">
-            <div class="spinner"></div>
-            Loading about information...
-        </div>
+        <!-- Content loaded dynamically -->
     </div>
 </div>
 
