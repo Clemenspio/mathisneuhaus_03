@@ -343,13 +343,7 @@
       transform: scale(1.01);
     }
     
-    .finder-item:hover .svg-icon.pencil-line {
-      transform: translate(-50%, -50%) scale(1.01);
-    }
-    
-    .finder-header:hover {
-      /* Kein Hintergrund mehr */
-    }
+
     
     .finder-header:hover .site-title {
       color: #000000;
@@ -358,10 +352,6 @@
     .finder-header:hover .item-icon,
     .finder-header:hover .svg-icon {
       transform: scale(1.02);
-    }
-    
-    .finder-header:hover .svg-icon.pencil-line {
-      transform: translate(-50%, -50%) scale(1.02);
     }
     
     .finder-header:hover .item-name,
@@ -461,16 +451,6 @@
     backface-visibility: hidden;
   }
   
-  .svg-icon.pencil-line {
-    filter: none;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    z-index: -1;
-    transition: transform 0.12s ease;
-  }
- 
   .image-thumbnail {
     max-width: 40px;
     max-height: 40px;
