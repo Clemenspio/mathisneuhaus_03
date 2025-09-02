@@ -167,12 +167,14 @@
   }
   
   .finder-column {
-    min-width: 280px;
+    min-width: 280px; /* Zurück zu ursprünglich */
     background: transparent;
     overflow-y: auto;
-    flex-shrink: 0;
-    transition: all 0.4s ease;
+    overflow-x: hidden; /* Verhindert horizontale Scrollbars */
+    flex-shrink: 0; /* Zurück zu ursprünglich - keine automatische Schrumpfung */
+    transition: all 0.4s ease; /* Sanfte Übergänge beibehalten */
     position: relative;
+    /* Dynamische Breite wie ursprünglich */
   }
   
   .finder-column::after {
@@ -401,6 +403,7 @@
     display: block;
     width: 100%; /* Füllt den verfügbaren Platz in der Spalte aus */
     transition: transform 0.12s ease;
+    word-break: keep-all; /* Verhindert Umbrüche in der Mitte von Wörtern */
   }
   
   .finder-item-title {
@@ -1119,13 +1122,20 @@
     .finder-column {
       min-width: 100%;
       max-width: 100%;
+      width: 100%; /* Feste Breite auf Mobile */
       border-right: none;
       border-bottom: none;
       flex: 1;
       overflow-y: auto;
+      overflow-x: hidden; /* Verhindert horizontale Scrollbars */
     }
-
+    
+    /* Auf Mobile: Alle Spalten haben gleiche Breite */
     .finder-column:last-child {
+      max-width: 100%;
+      width: 100%;
+      min-width: 100%;
+      flex: 1;
       border-bottom: none;
     }
     

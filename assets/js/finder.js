@@ -243,6 +243,8 @@ async function loadPath(path) {
             activeItemIndex = 0;
             updateActiveSelection();
         }
+        
+        // Spalten wachsen dynamisch mit Inhalt
     }
 }
 
@@ -305,6 +307,7 @@ async function loadRootContent() {
         
         if (data.status === 'ok' && data.items && data.items.length > 0) {
             addColumn('Home', data.items, null, '/');
+            // Spalten wachsen dynamisch
         }
     } catch (error) {
         console.error('Failed to load content:', error);
@@ -333,6 +336,8 @@ function addColumn(title, items, hoverImageUrl = null, path = null) {
     const parentColumnIndex = activeColumnIndex;
     columns.push({ title, items, element: column, hoverImageUrl, path });
 
+    // Spalten wachsen dynamisch mit Inhalt (wie ursprünglich)
+
     // "Docking" scroll logic - immediate UI update
     requestAnimationFrame(() => {
         const targetScrollLeft = column.offsetLeft;
@@ -340,6 +345,11 @@ function addColumn(title, items, hoverImageUrl = null, path = null) {
             left: targetScrollLeft,
             behavior: 'smooth'
         });
+        
+        // Nach dem Hinzufügen einer neuen Spalte: Dateinamen in allen Spalten neu berechnen
+        setTimeout(() => {
+            applyTruncation();
+        }, 100); // Kurze Verzögerung für Layout-Stabilität
     });
 
     // Asynchronous preloading - doesn't block UI
@@ -549,6 +559,8 @@ function removeColumnsAfter(index) {
 
     columns = columns.slice(0, index + 1);
     
+    // Spalten-Breiten bleiben dynamisch
+    
     // Reset selection to the new last column
     activeColumnIndex = columns.length - 1;
     activeItemIndex = -1;
@@ -557,18 +569,29 @@ function removeColumnsAfter(index) {
     updatePathIndicators();
 }
 
-// Dynamische Kürzung basierend auf verfügbarer Breite
+// Dynamische Kürzung basierend auf verfügbarer Breite - NUR bei echtem Platzmangel
 function truncateFilenameDynamically(element) {
-    // Stelle sicher, dass der Text nicht bereits gekürzt ist,
-    // um die ursprüngliche Länge zu erhalten.
+    // Stelle sicher, dass der Text nicht bereits gekürzt ist
     const originalFilename = element.dataset.originalFilename || element.textContent;
     element.textContent = originalFilename; // Setze auf Original zurück für die Breitenmessung
     
-    if (element.scrollWidth > element.clientWidth) {
-        // Führe die Kürzung durch
-        const truncatedName = getTruncatedName(originalFilename, element.clientWidth);
-        element.textContent = truncatedName;
-    }
+    // Warte kurz auf Layout-Stabilisierung
+    setTimeout(() => {
+        // Messe echte Breiten
+        const textWidth = element.scrollWidth;
+        const containerWidth = element.clientWidth;
+        
+        // NUR kürzen wenn der Text WIRKLICH überläuft
+        // Minimaler Puffer - nutze fast den ganzen Platz
+        if (textWidth > containerWidth) {
+            console.log(`Truncating: ${originalFilename} (${textWidth}px > ${containerWidth}px)`);
+            const truncatedName = getTruncatedName(originalFilename, containerWidth);
+            element.textContent = truncatedName;
+        } else {
+            // Genug Platz - kein Kürzen nötig
+            element.textContent = originalFilename;
+        }
+    }, 10);
 }
 
 function getTruncatedName(filename, availableWidth) {
@@ -582,20 +605,30 @@ function getTruncatedName(filename, availableWidth) {
         extension = filename.substring(lastDotIndex);
     }
     
-    // Zeichenbreite schätzen basierend auf Font-Größe
-    // Die .item-name hat font-size: 20px, Karl Font ist ca. 0.6em breit pro Zeichen
-    const avgCharWidth = 12; // Angepasst für 20px Karl Font
+    // Weniger aggressive Berechnung - nutze fast den ganzen verfügbaren Platz
+    const avgCharWidth = 11; // Etwas kompakter für bessere Platznutzung
     let maxLength = Math.floor(availableWidth / avgCharWidth);
     
-    // Subtrahiere die Länge der Endung und der Ellipse
-    maxLength -= (extension.length + ellipsis.length);
+    // Weniger Puffer - nutze mehr vom verfügbaren Platz
+    maxLength = Math.max(8, maxLength); // Minimaler Sicherheitspuffer
     
-    if (name.length > maxLength && maxLength > 3) {
-        const startLength = Math.ceil(maxLength / 2);
-        const endLength = Math.floor(maxLength / 2);
-        return `${name.substring(0, startLength)}${ellipsis}${name.substring(name.length - endLength)}${extension}`;
+    // Verfügbare Zeichen für den Namen (ohne Extension und Ellipsis)
+    const availableForName = maxLength - extension.length - ellipsis.length;
+    
+    // NUR kürzen wenn der Name wirklich zu lang ist
+    if (name.length > availableForName && availableForName >= 6) {
+        // ECHTE Mitte-Kürzung: 50/50 Split
+        const startLength = Math.ceil(availableForName / 2);
+        const endLength = Math.floor(availableForName / 2);
+        
+        if (startLength >= 2 && endLength >= 2) {
+            const truncatedName = `${name.substring(0, startLength)}${ellipsis}${name.substring(name.length - endLength)}${extension}`;
+            console.log(`Middle truncation: "${filename}" → "${truncatedName}" (${startLength}+${endLength} chars, ${availableWidth}px available)`);
+            return truncatedName;
+        }
     }
     
+    // Fallback: Kein Kürzen
     return filename;
 }
 
@@ -1339,6 +1372,8 @@ function getItemFromElement(element) {
     }
     return null;
 }
+
+// Spalten wachsen dynamisch mit ihrem Inhalt (wie ursprünglich)
 
 // Debounce-Funktion zur Performance-Optimierung
 function debounce(func, wait) {

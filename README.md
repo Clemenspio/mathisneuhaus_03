@@ -217,6 +217,7 @@ Die Website ist ein hochentwickeltes, production-ready Portfolio-System mit prof
 11. **Mobile Hover-Caching Fix** - Hover-Bilder werden auf Mobile nicht mehr unnötig geladen
 12. **Text-Overlay Mobile Fixes** - Sofortiges Loading mit korrekter Container-Größe
 13. **Mobile/iPad Zentrierung Fix** - Robuste vertikale Zentrierung für alle Bildschirmgrößen ≤1024px
+14. **Spalten-Stabilität & Smart Ellipsis** - Verhindert ruckartige Verschiebungen, intelligente Mitte-Kürzung
 
 ### Technische Details:
 - **Fetch-before-Remove Pattern** für flicker-freie Navigation
