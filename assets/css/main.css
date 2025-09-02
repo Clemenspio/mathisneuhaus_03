@@ -319,8 +319,8 @@
   
 
   
-  /* Hover-States nur auf Desktop (Geräte mit Maus) */
-  @media (hover: hover) and (pointer: fine) {
+  /* Hover-States nur auf echten Desktop-Geräten (nicht iPad/Tablets) */
+  @media (hover: hover) and (pointer: fine) and (min-width: 1025px) {
     .finder-item:hover {
       background-color: #00FF00;
       color: #000000;
@@ -1065,8 +1065,8 @@
      11. RESPONSIVE DESIGN
      ========================================================================== */
   
-  /* Robuste Zentrierung für alle mobilen und Tablet-Geräte */
-  @media (max-width: 1024px) {
+  /* Robuste Zentrierung für Mobile (iPad hat eigene Regeln) */
+  @media (max-width: 767px) {
     .finder-interface {
       /* Sicherstellen, dass Flexbox-Zentrierung immer funktioniert */
       position: relative !important;
@@ -1083,7 +1083,7 @@
     }
   }
   
-  /* Hide back button on desktop */
+  /* Hide back button on desktop and iPad */
   @media (min-width: 769px) {
     .finder-item.finder-back-button {
       display: none;
@@ -1194,14 +1194,39 @@
   /* iPad spezifische Anpassungen */
   @media (min-width: 768px) and (max-width: 1024px) {
     .finder-interface {
-      height: 100vh;
-      height: 100dvh; /* Dynamic viewport height für iPad */
-      min-height: 100vh; /* Fallback für ältere Browser */
-      min-height: 100dvh; /* Mindesthöhe für konsistente Zentrierung */
-      display: flex; /* Explizit sicherstellen */
-      align-items: center; /* Explizit sicherstellen */
-      justify-content: center; /* Explizit sicherstellen */
+      height: 100vh !important;
+      height: 100dvh !important; /* Dynamic viewport height für iPad */
+      min-height: 100vh !important; /* Fallback für ältere Browser */
+      min-height: 100dvh !important; /* Mindesthöhe für konsistente Zentrierung */
+      display: flex !important; /* Explizit sicherstellen */
+      align-items: center !important; /* Explizit sicherstellen */
+      justify-content: center !important; /* Explizit sicherstellen */
       box-sizing: border-box; /* Padding korrekt berechnen */
+      padding: 20px; /* Gleich wie Desktop */
+      overflow: hidden !important; /* Verhindert Scrolling */
+      position: fixed !important; /* Feste Position für perfekte Zentrierung */
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+    }
+    
+    .finder-container {
+      width: 94%; /* Gleich wie Desktop */
+      height: 94%; /* Gleich wie Desktop */
+      overflow: hidden; /* Verhindert interne Scrollbars */
+      /* iPad Touch-Scroll-Verhinderung */
+      -webkit-overflow-scrolling: none;
+      overscroll-behavior: none;
+      touch-action: none; /* Verhindert Touch-Scrolling */
+    }
+    
+    /* Body-Scroll auf iPad verhindern wenn Finder aktiv */
+    body {
+      overflow: hidden; /* Verhindert Body-Scrolling auf iPad */
+      position: fixed; /* Zusätzliche Scroll-Verhinderung */
+      width: 100%;
+      height: 100%;
     }
     
     .image-overlay,
