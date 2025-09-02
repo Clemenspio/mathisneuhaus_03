@@ -10,6 +10,13 @@ let activeColumnIndex = 0;
 let activeItemIndex = -1; // -1 means no item is selected
 let currentBackground = 1;
 
+// Touch device detection
+function isTouchDevice() {
+    return (('ontouchstart' in window) ||
+           (navigator.maxTouchPoints > 0) ||
+           (navigator.msMaxTouchPoints > 0));
+}
+
 // Overlay navigation state
 let currentOverlayItems = [];
 let currentOverlayIndex = -1;
@@ -356,10 +363,22 @@ function createItemElement(item, columnIndex) {
         // Markiere das Item als Hover-fähig für CSS-Selektoren
         itemDiv.setAttribute('data-has-hover', 'true');
         
-        // Nur auf Desktop: Hover-Funktionalität aktivieren
-        if (window.innerWidth > 768) {
+        // Nur auf echten Desktop-Geräten (ohne Touch): Hover-Funktionalität aktivieren
+        if (window.innerWidth > 768 && !isTouchDevice()) {
+            // Verhindere Mouse-Events die durch Touch ausgelöst werden
+            let lastTouchTime = 0;
+            
+            // Touch-Events überwachen um Mouse-Events zu blockieren
+            itemDiv.addEventListener('touchstart', () => {
+                lastTouchTime = Date.now();
+            }, { passive: true });
+            
             // Desktop: Mouse events - ANGEPASST für Cross-Fade
-            itemDiv.onmouseenter = () => {
+            itemDiv.onmouseenter = (e) => {
+                // Blockiere Mouse-Events die kurz nach Touch-Events auftreten
+                if (Date.now() - lastTouchTime < 500) {
+                    return;
+                }
                 // Ein geplantes Ausblenden abbrechen, falls vorhanden
                 if (hideDelayTimeout) {
                     clearTimeout(hideDelayTimeout);
@@ -368,7 +387,11 @@ function createItemElement(item, columnIndex) {
                 showHoverImage(item.hover_thumbnail_url, item.hover_image_inset);
             };
             
-            itemDiv.onmouseleave = () => {
+            itemDiv.onmouseleave = (e) => {
+                // Blockiere Mouse-Events die kurz nach Touch-Events auftreten
+                if (Date.now() - lastTouchTime < 500) {
+                    return;
+                }
                 // Set hover as inactive immediately when leaving item
                 isHoverActive = false;
                 
@@ -830,8 +853,8 @@ function preloadFolderImages(items) {
         return; // No images to preload, exit early
     }
     
-    // Priority 1: Preload hover images ONLY on desktop (not mobile - they don't exist functionally)
-    if (hoverItems.length > 0 && window.innerWidth > 768) {
+    // Priority 1: Preload hover images ONLY on desktop (not mobile/touch - they don't exist functionally)
+    if (hoverItems.length > 0 && window.innerWidth > 768 && !isTouchDevice()) {
         hoverItems.forEach(item => {
             if (item.hover_thumbnail_url) {
                 const hoverImg = new Image();
@@ -870,10 +893,10 @@ function preloadFolderImages(items) {
     
     if (imageItems.length > 0 || hoverItems.length > 0) {
         const startTime = performance.now();
-        const hoverCount = (window.innerWidth > 768) ? hoverItems.length : 0;
+        const hoverCount = (window.innerWidth > 768 && !isTouchDevice()) ? hoverItems.length : 0;
         console.log(`Smart preloading: ${hoverCount} hover images (desktop only), ${Math.min(imageItems.length, 10)} overlay images (throttled)`);
         
-        // Performance monitoring for debugging
+        // Performance monitoring for debugging  
         if (navigator.connection) {
             const connection = navigator.connection;
             console.log(`Network: ${connection.effectiveType}, Downlink: ${connection.downlink}Mbps, RTT: ${connection.rtt}ms`);
@@ -1246,6 +1269,7 @@ function applyTruncation() {
 // Funktion zur Aktualisierung der Hover-Funktionalität basierend auf Bildschirmgröße
 function updateHoverFunctionality() {
     const isMobile = window.innerWidth <= 768;
+    const isTouch = isTouchDevice();
     const hoverItems = document.querySelectorAll('.finder-item[data-has-hover]');
     
     hoverItems.forEach(itemDiv => {
@@ -1259,11 +1283,23 @@ function updateHoverFunctionality() {
         itemDiv.removeEventListener('touchcancel', itemDiv._touchCancelHandler);
         itemDiv.removeEventListener('touchmove', itemDiv._touchMoveHandler);
         
-        if (!isMobile) {
-            // Desktop: Hover-Funktionalität aktivieren
+        if (!isMobile && !isTouch) {
+            // Nur echte Desktop-Geräte: Hover-Funktionalität aktivieren
             const item = getItemFromElement(itemDiv);
             if (item && item.hover_thumbnail_url) {
-                itemDiv.onmouseenter = () => {
+                // Verhindere Mouse-Events die durch Touch ausgelöst werden
+                let lastTouchTime = 0;
+                
+                // Touch-Events überwachen um Mouse-Events zu blockieren
+                itemDiv.addEventListener('touchstart', () => {
+                    lastTouchTime = Date.now();
+                }, { passive: true });
+                
+                itemDiv.onmouseenter = (e) => {
+                    // Blockiere Mouse-Events die kurz nach Touch-Events auftreten
+                    if (Date.now() - lastTouchTime < 500) {
+                        return;
+                    }
                     if (hideDelayTimeout) {
                         clearTimeout(hideDelayTimeout);
                         hideDelayTimeout = null;
@@ -1271,7 +1307,11 @@ function updateHoverFunctionality() {
                     showHoverImage(item.hover_thumbnail_url, item.hover_image_inset);
                 };
                 
-                itemDiv.onmouseleave = () => {
+                itemDiv.onmouseleave = (e) => {
+                    // Blockiere Mouse-Events die kurz nach Touch-Events auftreten
+                    if (Date.now() - lastTouchTime < 500) {
+                        return;
+                    }
                     isHoverActive = false;
                     hideDelayTimeout = setTimeout(() => {
                         if (hideDelayTimeout && !isHoverActive) {

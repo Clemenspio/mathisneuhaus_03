@@ -1062,6 +1062,24 @@
      11. RESPONSIVE DESIGN
      ========================================================================== */
   
+  /* Robuste Zentrierung für alle mobilen und Tablet-Geräte */
+  @media (max-width: 1024px) {
+    .finder-interface {
+      /* Sicherstellen, dass Flexbox-Zentrierung immer funktioniert */
+      position: relative !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      /* Viewport-Höhe mit Fallbacks für bessere Kompatibilität */
+      height: 100vh !important;
+      height: 100dvh !important;
+      min-height: 100vh !important;
+      min-height: 100dvh !important;
+      /* Sicherstellen, dass das Interface immer die volle Höhe einnimmt */
+      overflow: hidden;
+    }
+  }
+  
   /* Hide back button on desktop */
   @media (min-width: 769px) {
     .finder-item.finder-back-button {
@@ -1073,7 +1091,13 @@
     .finder-interface {
       height: 100vh;
       height: 100dvh; /* Dynamic viewport height for mobile browsers */
+      min-height: 100vh; /* Fallback für ältere Browser */
+      min-height: 100dvh; /* Mindesthöhe für konsistente Zentrierung */
       padding: 10px;
+      display: flex; /* Explizit sicherstellen */
+      align-items: center; /* Explizit sicherstellen */
+      justify-content: center; /* Explizit sicherstellen */
+      box-sizing: border-box; /* Padding korrekt berechnen */
     }
     
     .finder-container {
@@ -1159,6 +1183,17 @@
   
   /* iPad spezifische Anpassungen */
   @media (min-width: 768px) and (max-width: 1024px) {
+    .finder-interface {
+      height: 100vh;
+      height: 100dvh; /* Dynamic viewport height für iPad */
+      min-height: 100vh; /* Fallback für ältere Browser */
+      min-height: 100dvh; /* Mindesthöhe für konsistente Zentrierung */
+      display: flex; /* Explizit sicherstellen */
+      align-items: center; /* Explizit sicherstellen */
+      justify-content: center; /* Explizit sicherstellen */
+      box-sizing: border-box; /* Padding korrekt berechnen */
+    }
+    
     .image-overlay,
     .text-overlay {
       padding: 5vh 4vw; /* Mehr Padding auf iPad */
