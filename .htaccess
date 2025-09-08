@@ -144,8 +144,9 @@ Header always unset Server
 # Directory Browsing deaktivieren
 Options -Indexes
 
-# Follow Symbolic Links aktivieren (für Kirby erforderlich)
-Options +FollowSymLinks
+# Follow Symbolic Links aktivieren (für Kirby erforderlich) 
+# All-Inkl spezifische Einstellung
+Options +FollowSymLinks -Indexes
 
 # =======================
 # PHP SICHERHEIT
