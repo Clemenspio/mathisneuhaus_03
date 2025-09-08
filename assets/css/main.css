@@ -665,20 +665,56 @@
   
   /* Mobile-spezifische Anpassungen */
   @media (max-width: 768px) {
+    /* Force correct overlay positioning on mobile */
+    .image-overlay, .text-overlay {
+      position: fixed !important;
+      top: 0 !important;
+      left: 0 !important;
+      width: 100vw !important;
+      height: 100vh !important;
+      z-index: 1000 !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      /* Override any transform inheritance */
+      transform: none !important;
+    }
+    
     .text-overlay:not(.active) {
       opacity: 0;
       pointer-events: none !important;
+      display: none !important;
     }
     
     .text-overlay.active {
       opacity: 1;
       pointer-events: auto;
+      display: flex !important;
+    }
+    
+    .image-overlay:not(.active) {
+      opacity: 0;
+      pointer-events: none !important;
+      display: none !important;
+    }
+    
+    .image-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+      display: flex !important;
     }
     
     .text-container {
       width: 95vw;
       height: 85vh; /* Fixed height for mobile to prevent size jumping */
       max-height: 85vh;
+      /* Ensure centering */
+      margin: auto;
+    }
+    
+    .image-container {
+      /* Ensure centering */
+      margin: auto;
     }
     
     .text-content {

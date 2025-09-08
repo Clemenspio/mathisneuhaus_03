@@ -19,23 +19,6 @@
     <div class="finder-container" id="finderContainer">
         <!-- Hover Background within Container -->
         <div class="finder-hover-bg" id="finderHoverBg"></div>
-        
-                        <!-- Image Overlay -->
-                <div class="image-overlay" id="imageOverlay" onclick="hideImageOverlay()" style="display: none;">
-                    <div class="image-container">
-                        <img id="overlayImage" src="" alt="">
-                    </div>
-                </div>
-
-                        <!-- Text File Overlay -->
-                <div class="text-overlay" id="textOverlay" onclick="hideTextOverlay()" style="display: none;">
-                    <div class="text-container" onclick="event.stopPropagation()">
-                        <!-- Scrollbarer Inhalt -->
-                        <div class="text-content" id="textContent">
-                            <!-- Text wird direkt geladen -->
-                        </div>
-                    </div>
-                </div>
 
         <!-- Header -->
         <div class="finder-header" onclick="toggleAboutPage()">
@@ -56,6 +39,24 @@
             <div class="finder-columns" id="finderColumns">
                 <!-- Columns will be dynamically added here -->
             </div>
+        </div>
+    </div>
+</div>
+
+<!-- Overlays OUTSIDE all containers to prevent transform conflicts -->
+<!-- Image Overlay -->
+<div class="image-overlay" id="imageOverlay" onclick="hideImageOverlay()" style="display: none;">
+    <div class="image-container">
+        <img id="overlayImage" src="" alt="">
+    </div>
+</div>
+
+<!-- Text File Overlay -->
+<div class="text-overlay" id="textOverlay" onclick="hideTextOverlay()" style="display: none;">
+    <div class="text-container" onclick="event.stopPropagation()">
+        <!-- Scrollbarer Inhalt -->
+        <div class="text-content" id="textContent">
+            <!-- Text wird direkt geladen -->
         </div>
     </div>
 </div>

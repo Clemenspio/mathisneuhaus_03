@@ -25,8 +25,11 @@ let overlayType = null; // 'image' or 'text'
 
 // Initialize the finder
 document.addEventListener('DOMContentLoaded', function() {
+<<<<<<< HEAD
     
     // Funktionen direkt aufrufen, ohne Verzögerung
+=======
+>>>>>>> parent of 6ad1859 (done version)
     loadBackgroundImage(true);
 
     const initialPath = window.location.pathname;
@@ -443,27 +446,26 @@ async function handleItemClick(item, columnIndex) {
     hideHoverImage();
 
     if (item.type === 'folder') {
+        history.pushState({ path: item.path }, '', item.path);
+
         try {
             const response = await fetch(`/api/content${item.path}`);
             const data = await response.json();
             
-            if (data.status === 'ok') {
-                // Only update URL AFTER successful API call
-                history.pushState({ path: item.path }, '', item.path);
-                
-                // Remove columns AFTER successful data fetch to prevent flickering
-                removeColumnsAfter(columnIndex);
-                addColumn(item.name, data.items || [], item.hover_thumbnail_url, item.path);
-                
-                // Update clickedPath based on current columns after removal/addition
-                clickedPath = columns.map(col => col.path).filter(Boolean);
-            } else {
-                console.error('API returned error:', data.message);
-                // Don't change URL if API fails
-            }
+            // Remove columns AFTER successful data fetch to prevent flickering
+            removeColumnsAfter(columnIndex);
+            addColumn(item.name, data.items || [], item.hover_thumbnail_url, item.path);
+            
+            // Update clickedPath based on current columns after removal/addition
+            clickedPath = columns.map(col => col.path).filter(Boolean);
         } catch (error) {
             console.error('Failed to load folder:', error);
-            // Don't change URL if fetch fails
+            // Remove columns and add empty column even on error
+            removeColumnsAfter(columnIndex);
+            addColumn(item.name, [], item.hover_thumbnail_url, item.path);
+            
+            // Update clickedPath based on current columns after removal/addition
+            clickedPath = columns.map(col => col.path).filter(Boolean);
         }
 
         updatePathIndicators();

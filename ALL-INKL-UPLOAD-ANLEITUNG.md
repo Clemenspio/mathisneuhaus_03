@@ -56,43 +56,29 @@ Die folgenden Dateien wurden bereits für All-Inkl optimiert:
 
 ---
 
-## 📁 3. UPLOAD VIA CYBERDUCK 🦆
+## 📁 3. UPLOAD VIA FTP/SFTP
 
-### Cyberduck Setup:
-1. **Cyberduck öffnen**
-2. **"Neue Verbindung"** (+ Symbol oben links)
-3. **Verbindungstyp**: FTP oder SFTP wählen
-4. **Server**: `mathisneuhaus.com` (oder FTP-Server von All-Inkl)
-5. **Benutzername**: Dein All-Inkl FTP-Username
-6. **Passwort**: Dein All-Inkl FTP-Passwort
-7. **Verbinden** klicken
+### Option A: FileZilla (Empfohlen)
+1. **Verbindung**: Server, Username, Passwort eingeben
+2. **Lokaler Ordner**: Wähle dein mathisneuhaus_03 Verzeichnis
+3. **Server-Ordner**: Navigiere zu deinem Webroot (meist `/` oder `/html/`)
+4. **Upload**: Alle Dateien außer den ❌ markierten hochladen
 
-### Upload-Prozess:
-1. **Server-Seite**: Navigiere zu deinem Webroot (meist `/` oder `/html/`)
-2. **Lokale Dateien**: 
-   - **Drag & Drop** aus Finder in Cyberduck ODER
-   - **"Hochladen"** Button → Ordner auswählen
-3. **Alle Ordner/Dateien hochladen** (außer ❌ markierte):
-   ```
-   ✅ assets/         ← Drag & Drop
-   ✅ content/        ← Drag & Drop  
-   ✅ kirby/          ← Drag & Drop
-   ✅ site/           ← Drag & Drop
-   ✅ .htaccess       ← Einzeln hochladen
-   ✅ index.php       ← Einzeln hochladen
-   ✅ robots.txt      ← Einzeln hochladen
-   ✅ composer.json   ← Einzeln hochladen
-   ```
+### Option B: Terminal/Command Line
+```bash
+# Via SFTP
+sftp username@mathisneuhaus.com
 
-### 💡 Cyberduck Tipps:
-- **Transfer-Fenster**: Zeigt Upload-Fortschritt
-- **Gleichzeitige Uploads**: Mehrere Ordner gleichzeitig ziehen
-- **Versteckte Dateien**: Menü → Darstellung → "Versteckte Dateien anzeigen"
-- **Wieder hochladen**: Automatisch nachfragen bei Duplikaten
-
-### Alternative: Andere FTP-Programme
-- **FileZilla**: Kostenlos, für Windows/Mac/Linux
-- **Terminal/Command Line**: Für Fortgeschrittene
+# Alle Dateien hochladen (ohne ausgeschlossene)
+put -r assets/
+put -r content/
+put -r kirby/
+put -r site/
+put .htaccess
+put composer.json
+put index.php
+put robots.txt
+```
 
 ### ⏱️ Upload-Zeit
 - **Geschätzte Dauer**: 15-30 Minuten
@@ -102,67 +88,24 @@ Die folgenden Dateien wurden bereits für All-Inkl optimiert:
 
 ## 🔐 4. BERECHTIGUNGEN SETZEN
 
-### 🦆 Mit Cyberduck + Script (EMPFOHLEN):
+### Via SSH (falls verfügbar):
+```bash
+# Zum Webroot wechseln
+cd /html/  # oder dein Webroot-Pfad
 
-#### **Methode 1: Automatisches Script (EINFACH)**
+# Script ausführbar machen
+chmod +x set-permissions.sh
 
-1. **Script hochladen**: `set-permissions.sh` mit Cyberduck hochladen
-2. **Script ausführbar machen**:
-   - **Rechtsklick** auf `set-permissions.sh` → **"Info"**
-   - **Berechtigung**: `755` eingeben (damit es ausführbar wird)
-3. **All-Inkl SSH aktivieren** (im KAS unter "SSH-Zugänge")
-4. **Terminal öffnen** (Mac: Programme → Terminal)
-5. **SSH-Verbindung**:
-   ```bash
-   ssh dein-username@mathisneuhaus.com
-   # Passwort eingeben
-   ```
-6. **Script ausführen**:
-   ```bash
-   cd /html/                    # Zum Website-Ordner
-   ./set-permissions.sh         # Script starten
-   ```
-7. **Fertig!** 🎉 Alle Berechtigungen sind automatisch richtig gesetzt
+# Berechtigungen setzen
+./set-permissions.sh
+```
 
-#### **Methode 2: Manuell in Cyberduck (ohne SSH)**
-
-**🎯 GENAU DIESE SCHRITTE (Kirby Community Empfehlung):**
-
-1. **Nach Upload** in Cyberduck bleiben - Server-Seite zeigt deine Website
-2. **Zuerst diese 4 kritischen Ordner finden und auf 755 setzen:**
-
-   **📁 site/accounts/** ← KRITISCH für Panel-Login!
-   - **Rechtsklick** → **"Info"** 
-   - **Berechtigung**: `755` eingeben
-   - **OK** klicken
-
-   **📁 site/cache/** ← Für Website-Performance
-   - **Rechtsklick** → **"Info"**
-   - **Berechtigung**: `755` eingeben  
-   - **OK** klicken
-
-   **📁 site/sessions/** ← Für Panel bleiben eingeloggt
-   - **Rechtsklick** → **"Info"**
-   - **Berechtigung**: `755` eingeben
-   - **OK** klicken
-
-   **📁 media/** ← Für Thumbnail-Generierung  
-   - **Rechtsklick** → **"Info"**
-   - **Berechtigung**: `755` eingeben
-   - **OK** klicken
-
-3. **Dateien prüfen** (sollten automatisch 644 sein):
-   - `.htaccess`, `index.php`, `robots.txt` → Falls nicht 644, ändern
-
-4. **Sicherheits-Check** - Diese auf 644 lassen:
-   - **Ganze kirby/ Ordner** → 644 (schreibgeschützt)
-   - **Ganze site/ Ordner** → 644 (außer accounts, cache, sessions)
-   - **Ganze content/ Ordner** → 644 (schreibgeschützt)
-
-### Alternative: Via KAS (All-Inkl Panel):
-1. **Dateimanager** im All-Inkl KAS aufrufen
-2. **Rechtsklick** auf Ordner → **"Eigenschaften"**
-3. **Chmod** auf `755` für Ordner, `644` für Dateien
+### Via KAS (All-Inkl Panel):
+1. **Dateimanager** aufrufen
+2. **Ordner-Berechtigungen** auf 755 setzen:
+   - `assets/`, `media/`, `site/accounts/`, `site/cache/`, `site/sessions/`
+3. **Datei-Berechtigungen** auf 644 setzen:
+   - `.htaccess`, `index.php`, `robots.txt`, `composer.json`
 
 ### Kritische Berechtigungen:
 ```
@@ -241,34 +184,16 @@ mv .htaccess .htaccess.bak
 # Dann .htaccess Zeile für Zeile aktivieren
 ```
 
-### Problem: "Panel nicht erreichbar" 🚨
+### Problem: "Panel nicht erreichbar"
+```bash
+# Berechtigungen prüfen
+chmod 755 site/accounts/
+chmod 755 site/sessions/
+chmod 755 site/cache/
 
-**HÄUFIGSTE URSACHEN (in Reihenfolge):**
-
-#### **1. Berechtigungen falsch (90% der Fälle)**
-**Cyberduck-Fix:**
-- **site/accounts/** → Rechtsklick → Info → `755` eingeben
-- **site/sessions/** → Rechtsklick → Info → `755` eingeben  
-- **site/cache/** → Rechtsklick → Info → `755` eingeben
-
-#### **2. .htaccess blockiert Panel**
-**Schneller Test:**
-- **.htaccess temporär umbenennen** in `.htaccess-backup`
-- **Panel testen**: `/panel` → Funktioniert jetzt?
-- **Falls ja**: .htaccess Zeile für Zeile testen
-- **Falls nein**: Berechtigungen sind das Problem
-
-#### **3. Panel-Route blockiert**
-**URL direkt testen:**
-- `https://deine-domain.com/kirby/router.php` 
-- **Falls Error 404**: Routing-Problem in .htaccess
-- **Falls Error 403**: Berechtigungs-Problem
-
-#### **4. Sessions-Ordner voll**
-**Cyberduck-Fix:**
-- **site/sessions/** öffnen
-- **Alle Dateien löschen** (außer `index.html`)
-- **Panel nochmal testen**
+# Sessions leeren
+rm -rf site/sessions/*
+```
 
 ### Problem: "Bilder werden nicht angezeigt"
 ```bash
