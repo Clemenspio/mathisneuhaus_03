@@ -18,4 +18,7 @@ Allow: /media/pages/
 Allow: /media/site/
 
 # Sitemap (falls vorhanden)
-# Sitemap: https://yourdomain.com/sitemap.xml
+# Sitemap: https://mathisneuhaus.com/sitemap.xml
+
+# Crawl-Delay für Shared Hosting Performance
+Crawl-delay: 1

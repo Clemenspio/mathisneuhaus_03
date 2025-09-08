@@ -1,5 +1,6 @@
 # =======================
 # KIRBY CMS 5.0 CONFIGURATION
+# Optimiert für All-Inkl Shared Hosting
 # =======================
 
 # Rewrite engine aktivieren
@@ -137,16 +138,22 @@ AddType font/otf .otf
 # ZUSÄTZLICHE SICHERHEIT
 # =======================
 
-# Server-Informationen verbergen
-ServerTokens Prod
-Header always unset Server
+# Server-Informationen verbergen (funktioniert nur bei Root-Zugriff)
+# ServerTokens Prod
+# Header always unset Server
+
+# All-Inkl Alternative: PHP-Info verbergen
+<IfModule mod_headers.c>
+    Header always unset X-Powered-By
+    Header always unset Server
+</IfModule>
 
 # Directory Browsing deaktivieren
 Options -Indexes
 
 # Follow Symbolic Links aktivieren (für Kirby erforderlich) 
-# All-Inkl spezifische Einstellung
-Options +FollowSymLinks -Indexes
+# All-Inkl spezifische Einstellung - SymLinksIfOwnerMatch für bessere Sicherheit
+Options +SymLinksIfOwnerMatch -Indexes
 
 # =======================
 # PHP SICHERHEIT
