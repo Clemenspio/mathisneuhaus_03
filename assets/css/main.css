@@ -1193,28 +1193,10 @@
       flex-direction: column;
       width: 95%;
       height: 95%;
-      background: #F8F6F4 !important;
-      background-color: #F8F6F4 !important;
+      background: #F8F6F4;
       box-shadow: 10px 14px 14px rgba(0, 0, 0, 0.35), inset -2px 2px 2px rgba(255, 255, 255, 0.4), inset 2px -2px 2px #E9E4E0;
       border-radius: 27px;
       overflow: hidden;
-      /* iOS Safari/Instagram browser fix - Mobile only */
-      -webkit-backface-visibility: hidden;
-      backface-visibility: hidden;
-      transform: translateZ(0);
-    }
-    
-    /* Extra background layer for iOS Safari/Instagram - Mobile only */
-    .finder-container::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: #F8F6F4 !important;
-      z-index: -1;
-      border-radius: 27px;
     }
     
     /* Auf Mobile: Animation nur für die letzte Spalte, nicht für bestehende */

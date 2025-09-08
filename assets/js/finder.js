@@ -17,7 +17,6 @@ function isTouchDevice() {
            (navigator.msMaxTouchPoints > 0));
 }
 
-
 // Overlay navigation state
 let currentOverlayItems = [];
 let currentOverlayIndex = -1;
@@ -25,18 +24,23 @@ let overlayType = null; // 'image' or 'text'
 
 // Initialize the finder
 document.addEventListener('DOMContentLoaded', function() {
+    
+    // Funktionen direkt aufrufen, ohne Verzögerung
     loadBackgroundImage(true);
 
-    const initialPath = window.location.pathname;
-    if (initialPath && initialPath !== '/') {
-        loadPath(initialPath);
-    } else {
-        loadRootContent();
-    }
+        const initialPath = window.location.pathname;
+        if (initialPath && initialPath !== '/') {
+            loadPath(initialPath);
+        } else {
+            loadRootContent();
+        }
+    }, 100); // 100ms delay should be enough
     
     // Initiale Anwendung der dynamischen Kürzung und Hover-Funktionalität
-    applyTruncation();
-    updateHoverFunctionality();
+    setTimeout(() => {
+        applyTruncation();
+        updateHoverFunctionality();
+    }, 100);
     
     // Add click event for background image to toggle about page
     const backgroundImage1 = document.getElementById('backgroundImage1');
@@ -1016,7 +1020,11 @@ function hideImageOverlay() {
         overlay.classList.remove('active');
         setTimeout(() => {
             overlay.style.display = 'none';
-            // Nicht das Element entfernen - nur ausblenden für bessere Stabilität auf Mobile
+            // Entferne das Element komplett aus dem DOM auf mobilen Geräten
+            // ABER nur wenn es nicht mehr benötigt wird
+            if (window.innerWidth <= 768 && !overlay.classList.contains('active')) {
+                overlay.remove();
+            }
         }, 300);
     }
     // Reset overlay navigation
@@ -1154,7 +1162,11 @@ function hideTextOverlay() {
         overlay.classList.remove('active');
         setTimeout(() => {
             overlay.style.display = 'none';
-            // Nicht das Element entfernen - nur ausblenden für bessere Stabilität auf Mobile
+            // Entferne das Element komplett aus dem DOM auf mobilen Geräten
+            // ABER nur wenn es nicht mehr benötigt wird
+            if (window.innerWidth <= 768 && !overlay.classList.contains('active')) {
+                overlay.remove();
+            }
         }, 300);
     }
     // Reset overlay navigation
