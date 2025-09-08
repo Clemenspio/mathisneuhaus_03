@@ -24,14 +24,17 @@ let overlayType = null; // 'image' or 'text'
 
 // Initialize the finder
 document.addEventListener('DOMContentLoaded', function() {
-    loadBackgroundImage(true);
+    // Add a small delay to ensure all DOM elements are fully rendered
+    setTimeout(() => {
+        loadBackgroundImage(true);
 
-    const initialPath = window.location.pathname;
-    if (initialPath && initialPath !== '/') {
-        loadPath(initialPath);
-    } else {
-        loadRootContent();
-    }
+        const initialPath = window.location.pathname;
+        if (initialPath && initialPath !== '/') {
+            loadPath(initialPath);
+        } else {
+            loadRootContent();
+        }
+    }, 100); // 100ms delay should be enough
     
     // Initiale Anwendung der dynamischen Kürzung und Hover-Funktionalität
     setTimeout(() => {
@@ -442,26 +445,27 @@ async function handleItemClick(item, columnIndex) {
     hideHoverImage();
 
     if (item.type === 'folder') {
-        history.pushState({ path: item.path }, '', item.path);
-
         try {
             const response = await fetch(`/api/content${item.path}`);
             const data = await response.json();
             
-            // Remove columns AFTER successful data fetch to prevent flickering
-            removeColumnsAfter(columnIndex);
-            addColumn(item.name, data.items || [], item.hover_thumbnail_url, item.path);
-            
-            // Update clickedPath based on current columns after removal/addition
-            clickedPath = columns.map(col => col.path).filter(Boolean);
+            if (data.status === 'ok') {
+                // Only update URL AFTER successful API call
+                history.pushState({ path: item.path }, '', item.path);
+                
+                // Remove columns AFTER successful data fetch to prevent flickering
+                removeColumnsAfter(columnIndex);
+                addColumn(item.name, data.items || [], item.hover_thumbnail_url, item.path);
+                
+                // Update clickedPath based on current columns after removal/addition
+                clickedPath = columns.map(col => col.path).filter(Boolean);
+            } else {
+                console.error('API returned error:', data.message);
+                // Don't change URL if API fails
+            }
         } catch (error) {
             console.error('Failed to load folder:', error);
-            // Remove columns and add empty column even on error
-            removeColumnsAfter(columnIndex);
-            addColumn(item.name, [], item.hover_thumbnail_url, item.path);
-            
-            // Update clickedPath based on current columns after removal/addition
-            clickedPath = columns.map(col => col.path).filter(Boolean);
+            // Don't change URL if fetch fails
         }
 
         updatePathIndicators();
