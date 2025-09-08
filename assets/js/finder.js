@@ -25,6 +25,17 @@ let overlayType = null; // 'image' or 'text'
 
 // Initialize the finder
 document.addEventListener('DOMContentLoaded', function() {
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+<<<<<<< HEAD
+    
+    // Funktionen direkt aufrufen, ohne Verzögerung
+=======
+>>>>>>> parent of 6ad1859 (done version)
+=======
+>>>>>>> parent of 6ad1859 (done version)
+>>>>>>> parent of 20788c6 (broken mobile text image hover)
     loadBackgroundImage(true);
 
     const initialPath = window.location.pathname;
