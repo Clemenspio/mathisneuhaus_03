@@ -5,8 +5,7 @@
 ### 1. Dateien und Konfiguration
 - [ ] ✅ `.htaccess` wurde erstellt
 - [ ] ✅ `robots.txt` wurde optimiert  
-- [ ] ✅ `config-production.php` wurde erstellt
-- [ ] ⚠️ `site/config/config.php` durch `config-production.php` ersetzen
+- [ ] ✅ `config.php` wurde für Produktion optimiert (debug=false)
 - [ ] 🔐 Ordnerberechtigungen setzen (siehe unten)
 
 ### 2. Wichtige Sicherheitsmaßnahmen
@@ -78,15 +77,14 @@ find site/ -name "*.php" -exec chmod 644 {} \;
 ❌ .gitignore              # Git Ignore Datei
 ❌ README.md               # Development Dokumentation
 ❌ composer.lock           # Composer Lock (kann Pfade preisgeben)
-❌ site/config/config.php  # Development Config (enthält debug=true)
 ❌ node_modules/           # Falls vorhanden
 ❌ .env                    # Umgebungsvariablen
 ❌ *.log                   # Log-Dateien
 ```
 
-### Nach Upload umbenennen:
+### Bereit für Upload:
 ```
-✅ config-production.php → config.php
+✅ Alle Dateien können direkt hochgeladen werden
 ```
 
 ---
@@ -98,8 +96,7 @@ find site/ -name "*.php" -exec chmod 644 {} \;
 # Via SFTP/FTP alle Dateien hochladen AUSSER:
 # - .git/, README.md, composer.lock, etc.
 
-# Nach Upload:
-mv site/config/config-production.php site/config/config.php
+# Config ist bereits produktionsbereit
 ```
 
 ### 2. Berechtigungen setzen
