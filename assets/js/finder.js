@@ -25,7 +25,9 @@ let overlayType = null; // 'image' or 'text'
 
 // Initialize the finder
 document.addEventListener('DOMContentLoaded', function() {
-    loadBackgroundImage(true);
+    // Add a small delay to ensure all DOM elements are fully rendered
+    setTimeout(() => {
+        loadBackgroundImage(true);
 
     const initialPath = window.location.pathname;
     if (initialPath && initialPath !== '/') {
