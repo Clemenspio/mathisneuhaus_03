@@ -137,16 +137,33 @@ AddType font/otf .otf
 # ZUSÄTZLICHE SICHERHEIT
 # =======================
 
+<<<<<<< HEAD
 # Server-Informationen verbergen
 ServerTokens Prod
 Header always unset Server
+=======
+# Server-Informationen verbergen (funktioniert nur bei Root-Zugriff)
+# ServerTokens Prod
+# Header always unset Server
+
+# All-Inkl Alternative: PHP-Info verbergen
+<IfModule mod_headers.c>
+    Header always unset X-Powered-By
+    Header always unset Server
+</IfModule>
+>>>>>>> parent of 6ad1859 (done version)
 
 # Directory Browsing deaktivieren
 Options -Indexes
 
 # Follow Symbolic Links aktivieren (für Kirby erforderlich) 
+<<<<<<< HEAD
 # All-Inkl spezifische Einstellung
 Options +FollowSymLinks -Indexes
+=======
+# All-Inkl spezifische Einstellung - SymLinksIfOwnerMatch für bessere Sicherheit
+Options +SymLinksIfOwnerMatch -Indexes
+>>>>>>> parent of 6ad1859 (done version)
 
 # =======================
 # PHP SICHERHEIT
