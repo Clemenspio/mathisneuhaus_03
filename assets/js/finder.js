@@ -17,6 +17,7 @@ function isTouchDevice() {
            (navigator.msMaxTouchPoints > 0));
 }
 
+
 // Overlay navigation state
 let currentOverlayItems = [];
 let currentOverlayIndex = -1;
@@ -24,23 +25,20 @@ let overlayType = null; // 'image' or 'text'
 
 // Initialize the finder
 document.addEventListener('DOMContentLoaded', function() {
-    // Add a small delay to ensure all DOM elements are fully rendered
-    setTimeout(() => {
-        loadBackgroundImage(true);
+    
+    // Funktionen direkt aufrufen, ohne Verzögerung
+    loadBackgroundImage(true);
 
-        const initialPath = window.location.pathname;
-        if (initialPath && initialPath !== '/') {
-            loadPath(initialPath);
-        } else {
-            loadRootContent();
-        }
-    }, 100); // 100ms delay should be enough
+    const initialPath = window.location.pathname;
+    if (initialPath && initialPath !== '/') {
+        loadPath(initialPath);
+    } else {
+        loadRootContent();
+    }
     
     // Initiale Anwendung der dynamischen Kürzung und Hover-Funktionalität
-    setTimeout(() => {
-        applyTruncation();
-        updateHoverFunctionality();
-    }, 100);
+    applyTruncation();
+    updateHoverFunctionality();
     
     // Add click event for background image to toggle about page
     const backgroundImage1 = document.getElementById('backgroundImage1');
@@ -1021,11 +1019,7 @@ function hideImageOverlay() {
         overlay.classList.remove('active');
         setTimeout(() => {
             overlay.style.display = 'none';
-            // Entferne das Element komplett aus dem DOM auf mobilen Geräten
-            // ABER nur wenn es nicht mehr benötigt wird
-            if (window.innerWidth <= 768 && !overlay.classList.contains('active')) {
-                overlay.remove();
-            }
+            // Nicht das Element entfernen - nur ausblenden für bessere Stabilität auf Mobile
         }, 300);
     }
     // Reset overlay navigation
@@ -1163,11 +1157,7 @@ function hideTextOverlay() {
         overlay.classList.remove('active');
         setTimeout(() => {
             overlay.style.display = 'none';
-            // Entferne das Element komplett aus dem DOM auf mobilen Geräten
-            // ABER nur wenn es nicht mehr benötigt wird
-            if (window.innerWidth <= 768 && !overlay.classList.contains('active')) {
-                overlay.remove();
-            }
+            // Nicht das Element entfernen - nur ausblenden für bessere Stabilität auf Mobile
         }, 300);
     }
     // Reset overlay navigation
