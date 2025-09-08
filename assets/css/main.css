@@ -521,16 +521,31 @@
     opacity: 1;
   }
   
+  /* Desktop image container positioning */
+  @media (min-width: 769px) {
+    .image-container {
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      background: #FFFFFF;
+      box-shadow: 0px 0px 34px rgba(0, 0, 0, 0.14);
+      border-radius: 3px;
+    }
+  }
+  
+  /* Base container for mobile - no absolute positioning */
   .image-container {
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
     background: #FFFFFF;
     box-shadow: 0px 0px 34px rgba(0, 0, 0, 0.14);
     border-radius: 3px;
@@ -670,51 +685,86 @@
       position: fixed !important;
       top: 0 !important;
       left: 0 !important;
+      right: 0 !important;
+      bottom: 0 !important;
       width: 100vw !important;
       height: 100vh !important;
-      z-index: 1000 !important;
-      display: flex !important;
+      z-index: 9999 !important; /* Much higher z-index */
       align-items: center !important;
       justify-content: center !important;
-      /* Override any transform inheritance */
+      /* Override any transform inheritance - more aggressive */
       transform: none !important;
+      -webkit-transform: none !important;
+      -ms-transform: none !important;
+      /* Ensure no margin/padding shifts */
+      margin: 0 !important;
+      padding: 0 !important;
+      /* Ensure smooth transitions on mobile */
+      transition: opacity 0.3s ease !important;
+      /* Ensure it's on top of everything */
+      background: rgba(0, 0, 0, 0.3) !important;
+      /* Force new stacking context */
+      isolation: isolate !important;
+      /* Override any parent transformations */
+      contain: layout style paint !important;
     }
     
     .text-overlay:not(.active) {
-      opacity: 0;
+      opacity: 0 !important;
       pointer-events: none !important;
       display: none !important;
     }
     
     .text-overlay.active {
-      opacity: 1;
-      pointer-events: auto;
+      opacity: 1 !important;
+      pointer-events: auto !important;
       display: flex !important;
     }
     
     .image-overlay:not(.active) {
-      opacity: 0;
+      opacity: 0 !important;
       pointer-events: none !important;
       display: none !important;
     }
     
     .image-overlay.active {
-      opacity: 1;
-      pointer-events: auto;
+      opacity: 1 !important;
+      pointer-events: auto !important;
       display: flex !important;
     }
     
     .text-container {
-      width: 95vw;
-      height: 85vh; /* Fixed height for mobile to prevent size jumping */
-      max-height: 85vh;
-      /* Ensure centering */
-      margin: auto;
+      width: 90vw; /* Smaller width for mobile */
+      height: auto; /* Let content determine height naturally */
+      max-height: 70vh; /* Much smaller max height */
+      min-height: 30vh; /* Smaller minimum height */
+      /* Ensure centering - more aggressive */
+      margin: 0 auto !important;
+      position: relative !important;
+      /* Override any transform inheritance */
+      transform: none !important;
+      -webkit-transform: none !important;
+      /* Maintain A4-like aspect ratio on mobile too */
+      max-width: 500px; /* Smaller max width */
+      /* Ensure no unexpected positioning */
+      left: auto !important;
+      right: auto !important;
+      top: auto !important;
+      bottom: auto !important;
     }
     
     .image-container {
-      /* Ensure centering */
-      margin: auto;
+      /* Ensure centering - more aggressive */
+      margin: 0 auto !important;
+      position: relative !important;
+      /* Override any transform inheritance */
+      transform: none !important;
+      -webkit-transform: none !important;
+      /* Ensure no unexpected positioning */
+      left: auto !important;
+      right: auto !important;
+      top: auto !important;
+      bottom: auto !important;
     }
     
     .text-content {
@@ -1224,24 +1274,32 @@
     }
     
     .image-container {
-      position: relative; /* Nicht absolute auf Mobile */
-      left: auto;
-      top: auto;
-      transform: none; /* Keine transform-Zentrierung nötig */
+      position: relative !important; /* Nicht absolute auf Mobile */
+      left: auto !important;
+      top: auto !important;
+      right: auto !important;
+      bottom: auto !important;
+      transform: none !important; /* Keine transform-Zentrierung nötig */
+      -webkit-transform: none !important;
+      margin: 0 auto !important; /* Zentrale Ausrichtung */
       max-height: 90dvh; /* Maximal 90% der dynamischen Viewport-Höhe */
       max-width: 94vw;
     }
     
     .text-container {
-      position: relative; /* Nicht absolute auf Mobile */
-      left: auto;
-      top: auto;
-      transform: none; /* Keine transform-Zentrierung nötig */
-      max-height: 90dvh; /* Maximal 90% der dynamischen Viewport-Höhe */
-      width: 94vw;
-      max-width: 600px;
+      position: relative !important; /* Nicht absolute auf Mobile */
+      left: auto !important;
+      top: auto !important;
+      right: auto !important;
+      bottom: auto !important;
+      transform: none !important; /* Keine transform-Zentrierung nötig */
+      -webkit-transform: none !important;
+      margin: 0 auto !important; /* Zentrale Ausrichtung */
+      max-height: 70vh; /* Consistent mit der ersten Mobile-Regel */
+      width: 90vw; /* Consistent mit der ersten Mobile-Regel */
+      max-width: 500px; /* Consistent mit der ersten Mobile-Regel */
       height: auto; /* Flexibel statt feste Höhe */
-      min-height: 60dvh; /* Mindesthöhe für Text */
+      min-height: 30vh; /* Consistent mit der ersten Mobile-Regel */
     }
   }
   
