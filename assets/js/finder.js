@@ -25,15 +25,9 @@ let overlayType = null; // 'image' or 'text'
 
 // Initialize the finder
 document.addEventListener('DOMContentLoaded', function() {
-<<<<<<< HEAD
-<<<<<<< HEAD
-    
-    // Funktionen direkt aufrufen, ohne Verzögerung
-=======
->>>>>>> parent of 6ad1859 (done version)
-=======
->>>>>>> parent of 6ad1859 (done version)
-    loadBackgroundImage(true);
+    // Add a small delay to ensure all DOM elements are fully rendered
+    setTimeout(() => {
+        loadBackgroundImage(true);
 
     const initialPath = window.location.pathname;
     if (initialPath && initialPath !== '/') {
