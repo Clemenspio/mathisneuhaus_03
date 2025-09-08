@@ -1,0 +1,164 @@
+# =======================
+# KIRBY CMS 5.0 CONFIGURATION
+# =======================
+
+# Rewrite engine aktivieren
+RewriteEngine On
+
+# =======================
+# KIRBY SYSTEM SCHUTZ
+# =======================
+
+# Blockiere Zugriff auf sensible Verzeichnisse
+RewriteRule ^kirby/?.*$ - [F,L]
+RewriteRule ^site/?.*$ - [F,L]
+RewriteRule ^content/?.*\.txt$ - [F,L]
+RewriteRule ^content/?.*\.md$ - [F,L]
+
+# Blockiere Zugriff auf Git und andere Entwicklungsdateien
+RewriteRule ^\.git/?.*$ - [F,L]
+RewriteRule ^\.(?:htaccess|htpasswd|env)$ - [F,L]
+RewriteRule composer\.(json|lock)$ - [F,L]
+RewriteRule package(-lock)?\.json$ - [F,L]
+RewriteRule ^README\.md$ - [F,L]
+
+# =======================
+# KIRBY URL ROUTING
+# =======================
+
+# Umleitung für das Panel (falls benötigt)
+RewriteRule ^panel/?(.*)$ kirby/router.php [L]
+
+# Hauptrouting für Kirby
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ index.php [L]
+
+# =======================
+# SICHERHEITSHEADER
+# =======================
+
+# X-Frame-Options: Schutz vor Clickjacking
+Header always set X-Frame-Options "SAMEORIGIN"
+
+# X-Content-Type-Options: Verhindert MIME-Type Sniffing
+Header always set X-Content-Type-Options "nosniff"
+
+# X-XSS-Protection: XSS Schutz
+Header always set X-XSS-Protection "1; mode=block"
+
+# Referrer Policy: Kontrolliert Referrer-Informationen
+Header always set Referrer-Policy "strict-origin-when-cross-origin"
+
+# =======================
+# PERFORMANCE OPTIMIERUNG
+# =======================
+
+# Komprimierung aktivieren
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/plain
+    AddOutputFilterByType DEFLATE text/html
+    AddOutputFilterByType DEFLATE text/xml
+    AddOutputFilterByType DEFLATE text/css
+    AddOutputFilterByType DEFLATE application/xml
+    AddOutputFilterByType DEFLATE application/xhtml+xml
+    AddOutputFilterByType DEFLATE application/rss+xml
+    AddOutputFilterByType DEFLATE application/javascript
+    AddOutputFilterByType DEFLATE application/x-javascript
+    AddOutputFilterByType DEFLATE image/svg+xml
+</IfModule>
+
+# Browser Caching
+<IfModule mod_expires.c>
+    ExpiresActive On
+    
+    # Bilder
+    ExpiresByType image/jpg "access plus 1 month"
+    ExpiresByType image/jpeg "access plus 1 month"
+    ExpiresByType image/gif "access plus 1 month"
+    ExpiresByType image/png "access plus 1 month"
+    ExpiresByType image/webp "access plus 1 month"
+    ExpiresByType image/svg+xml "access plus 1 month"
+    
+    # CSS und JavaScript
+    ExpiresByType text/css "access plus 1 month"
+    ExpiresByType application/javascript "access plus 1 month"
+    ExpiresByType application/x-javascript "access plus 1 month"
+    
+    # Fonts
+    ExpiresByType font/otf "access plus 1 year"
+    ExpiresByType font/woff "access plus 1 year"
+    ExpiresByType font/woff2 "access plus 1 year"
+    ExpiresByType application/font-woff "access plus 1 year"
+    ExpiresByType application/font-woff2 "access plus 1 year"
+    
+    # HTML
+    ExpiresByType text/html "access plus 0 seconds"
+</IfModule>
+
+# Cache Control Headers
+<IfModule mod_headers.c>
+    # Assets mit längerer Cache-Zeit
+    <FilesMatch "\.(css|js|png|jpg|jpeg|gif|webp|svg|woff|woff2|otf)$">
+        Header set Cache-Control "public, max-age=2592000"
+    </FilesMatch>
+    
+    # HTML Dateien nicht cachen
+    <FilesMatch "\.(html|htm|php)$">
+        Header set Cache-Control "no-cache, no-store, must-revalidate"
+        Header set Pragma "no-cache"
+        Header set Expires "0"
+    </FilesMatch>
+</IfModule>
+
+# =======================
+# MIME TYPES
+# =======================
+
+# Moderne Bildformate
+AddType image/webp .webp
+AddType image/avif .avif
+
+# Font-Formate
+AddType font/woff .woff
+AddType font/woff2 .woff2
+AddType font/otf .otf
+
+# =======================
+# FEHLERBEHANDLUNG
+# =======================
+
+# Custom Error Pages (optional)
+# ErrorDocument 404 /error
+# ErrorDocument 403 /error
+# ErrorDocument 500 /error
+
+# =======================
+# ZUSÄTZLICHE SICHERHEIT
+# =======================
+
+# Server-Informationen verbergen
+ServerTokens Prod
+Header always unset Server
+
+# Directory Browsing deaktivieren
+Options -Indexes
+
+# Follow Symbolic Links aktivieren (für Kirby erforderlich)
+Options +FollowSymLinks
+
+# =======================
+# PHP SICHERHEIT
+# =======================
+
+# PHP-Dateien außerhalb des Webroot schützen
+<Files ~ "\.php$">
+    <RequireAll>
+        Require all granted
+    </RequireAll>
+</Files>
+
+# Backup-Dateien blockieren
+<FilesMatch "\.(bak|backup|old|tmp|temp)$">
+    Require all denied
+</FilesMatch>

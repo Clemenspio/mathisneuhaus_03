@@ -1,2 +1,21 @@
 User-agent: *
-Disallow: /
+Allow: /
+
+# Blockiere sensible Bereiche
+Disallow: /kirby/
+Disallow: /site/
+Disallow: /content/
+Disallow: /media/panel/
+Disallow: /.git/
+Disallow: /.htaccess
+Disallow: /composer.json
+Disallow: /composer.lock
+Disallow: /README.md
+
+# Erlaube wichtige Assets
+Allow: /assets/
+Allow: /media/pages/
+Allow: /media/site/
+
+# Sitemap (falls vorhanden)
+# Sitemap: https://yourdomain.com/sitemap.xml
