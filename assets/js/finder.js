@@ -17,7 +17,6 @@ function isTouchDevice() {
            (navigator.msMaxTouchPoints > 0));
 }
 
-
 // Overlay navigation state
 let currentOverlayItems = [];
 let currentOverlayIndex = -1;
@@ -25,8 +24,6 @@ let overlayType = null; // 'image' or 'text'
 
 // Initialize the finder
 document.addEventListener('DOMContentLoaded', function() {
-    
-    // Funktionen direkt aufrufen, ohne Verzögerung
     loadBackgroundImage(true);
 
     const initialPath = window.location.pathname;
@@ -37,8 +34,10 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Initiale Anwendung der dynamischen Kürzung und Hover-Funktionalität
-    applyTruncation();
-    updateHoverFunctionality();
+    setTimeout(() => {
+        applyTruncation();
+        updateHoverFunctionality();
+    }, 100);
     
     // Add click event for background image to toggle about page
     const backgroundImage1 = document.getElementById('backgroundImage1');
@@ -426,6 +425,9 @@ function createItemElement(item, columnIndex) {
     
     const icon = getIcon(item.type, item);
     
+    // Add data-path attribute for easy finding
+    itemDiv.setAttribute('data-path', item.path);
+    
     itemDiv.innerHTML = `
         <div class="item-content">
             <div class="item-icon">${icon}</div>
@@ -438,37 +440,59 @@ function createItemElement(item, columnIndex) {
     return itemDiv;
 }
 
-// Handle item clicks
+// Handle item clicks - Optimized two-stage loading
 async function handleItemClick(item, columnIndex) {
     hideHoverImage();
 
     if (item.type === 'folder') {
+        history.pushState({ path: item.path }, '', item.path);
+
         try {
-            const response = await fetch(`/api/content${item.path}`);
-            const data = await response.json();
+            // STAGE 1: Fast load - Ordner öffnet sofort mit essentiellen Daten
+            const fastResponse = await fetch(`/api/content-fast${item.path}`);
+            const fastData = await fastResponse.json();
             
-            if (data.status === 'ok') {
-                // Only update URL AFTER successful API call
-                history.pushState({ path: item.path }, '', item.path);
-                
-                // Remove columns AFTER successful data fetch to prevent flickering
+            if (fastData.status === 'ok') {
+                // Ordner SOFORT öffnen mit Namen, Icons, Thumbnails
                 removeColumnsAfter(columnIndex);
-                addColumn(item.name, data.items || [], item.hover_thumbnail_url, item.path);
+                addColumn(item.name, fastData.items || [], null, item.path);
                 
-                // Update clickedPath based on current columns after removal/addition
+                // Update clickedPath
                 clickedPath = columns.map(col => col.path).filter(Boolean);
-            } else {
-                console.error('API returned error:', data.message);
-                // Don't change URL if API fails
+                updatePathIndicators();
+                
+                console.log(`Folder opened fast: ${fastData.items.length} items loaded immediately`);
+                
+                // STAGE 2: Background preload - Hover-Bilder und Details nachladen
+                setTimeout(async () => {
+                    try {
+                        const preloadResponse = await fetch(`/api/content-preload${item.path}`);
+                        const preloadData = await preloadResponse.json();
+                        
+                        if (preloadData.status === 'ok' && preloadData.preload) {
+                            // Hover-Bilder zu bereits geladenen Items hinzufügen
+                            updateItemsWithPreloadData(preloadData.preload, item.path);
+                            
+                            // Intelligentes Preloading starten
+                            startIntelligentPreloading(preloadData.preload);
+                            
+                            console.log(`Preload completed: ${preloadData.preload.hover_images.length} hover images, ${preloadData.preload.image_details.length} image details`);
+                        }
+                    } catch (preloadError) {
+                        console.log('Preload failed (non-critical):', preloadError);
+                    }
+                }, 100); // Kurze Verzögerung für UI-Priorität
             }
         } catch (error) {
             console.error('Failed to load folder:', error);
-            // Don't change URL if fetch fails
+            // Fallback zu leerem Ordner
+            removeColumnsAfter(columnIndex);
+            addColumn(item.name, [], item.hover_thumbnail_url, item.path);
+            
+            clickedPath = columns.map(col => col.path).filter(Boolean);
         }
 
-        updatePathIndicators();
-        
-        // Anwendung der dynamischen Kürzung nach dem Hinzufügen einer neuen Spalte
+        // Anwendung der dynamischen Kürzung nach dem schnellen Load
         setTimeout(() => {
             applyTruncation();
             updateHoverFunctionality();
@@ -878,65 +902,148 @@ function hideHoverImage() {
     }, 550); // 50ms mehr als CSS transition (500ms) für saubere Koordination
 }
 
-// Preload all images in a folder for faster switching
-function preloadFolderImages(items) {
-    const imageItems = items.filter(item => item.type === 'image' && item.url);
-    const hoverItems = items.filter(item => item.type === 'folder' && item.hover_thumbnail_url);
+// Update items with preload data (hover images, srcsets, etc.)
+function updateItemsWithPreloadData(preloadData, currentPath) {
+    // Find current column
+    const currentColumn = columns.find(col => col.path === currentPath);
+    if (!currentColumn) return;
     
-    // Only preload if there are actually images to preload
-    if (hoverItems.length === 0 && imageItems.length === 0) {
-        return; // No images to preload, exit early
-    }
+    // Update folder items with hover images
+    preloadData.hover_images.forEach(hoverImg => {
+        const folderItem = currentColumn.items.find(item => 
+            item.type === 'folder' && item.path === hoverImg.folder_path
+        );
+        
+        if (folderItem) {
+            folderItem.hover_thumbnail_url = hoverImg.hover_url;
+            folderItem.hover_srcset = hoverImg.hover_srcset;
+            folderItem.hover_image_inset = hoverImg.hover_inset;
+            
+            // Update DOM element to enable hover functionality
+            const itemElement = findItemElementByPath(hoverImg.folder_path);
+            if (itemElement) {
+                itemElement.setAttribute('data-has-hover', 'true');
+                updateSingleItemHoverFunctionality(itemElement, folderItem);
+            }
+        }
+    });
     
-    // Priority 1: Preload hover images ONLY on desktop (not mobile/touch - they don't exist functionally)
-    if (hoverItems.length > 0 && window.innerWidth > 768 && !isTouchDevice()) {
-        hoverItems.forEach(item => {
-            if (item.hover_thumbnail_url) {
-                const hoverImg = new Image();
-                hoverImg.src = item.hover_thumbnail_url;
+    // Update image items with detailed data
+    preloadData.image_details.forEach(imgDetail => {
+        const imageItem = currentColumn.items.find(item => 
+            item.type === 'image' && item.path === imgDetail.path
+        );
+        
+        if (imageItem) {
+            imageItem.srcset = imgDetail.srcset;
+            imageItem.dimensions = imgDetail.dimensions;
+            imageItem.file_size = imgDetail.file_size;
+            imageItem.is_large_image = imgDetail.is_large_image;
+            
+            if (imgDetail.is_large_image) {
+                imageItem.optimized_small = imgDetail.optimized_small;
+                imageItem.optimized_medium = imgDetail.optimized_medium;
+                imageItem.optimized_large = imgDetail.optimized_large;
+            }
+        }
+    });
+}
+
+// Start intelligent preloading based on content type and user behavior
+function startIntelligentPreloading(preloadData) {
+    // Priority 1: Hover images für Desktop (sofort)
+    if (window.innerWidth > 768 && !isTouchDevice()) {
+        preloadData.hover_images.forEach(hoverImg => {
+            const img = new Image();
+            img.src = hoverImg.hover_url;
+            if (hoverImg.hover_srcset) {
+                img.srcset = hoverImg.hover_srcset;
             }
         });
+        
+        if (preloadData.hover_images.length > 0) {
+            console.log(`Preloaded ${preloadData.hover_images.length} hover images for desktop`);
+        }
     }
     
-    // Priority 2: Preload overlay images with intelligent throttling
-    if (imageItems.length > 0) {
-        // Throttled preloading to prevent network congestion
-        const preloadBatch = 3; // Start with 3 images
-        const maxPreload = Math.min(10, imageItems.length);
+    // Priority 2: Thumbnails für Bilder (gestaffelt)
+    if (preloadData.image_details.length > 0) {
+        const maxPreload = Math.min(5, preloadData.image_details.length);
         
-        // Immediate batch
-        imageItems.slice(0, preloadBatch).forEach(item => {
-            const img = new Image();
-            img.src = item.thumbnail || item.url; // Prefer thumbnails for faster loading
+        preloadData.image_details.slice(0, maxPreload).forEach((imgDetail, index) => {
+            setTimeout(() => {
+                // Preload optimized versions first für große Bilder
+                if (imgDetail.is_large_image && imgDetail.optimized_small) {
+                    const smallImg = new Image();
+                    smallImg.src = imgDetail.optimized_small;
+                    
+                    // Dann medium version nach kurzer Verzögerung
+                    setTimeout(() => {
+                        const mediumImg = new Image();
+                        mediumImg.src = imgDetail.optimized_medium;
+                    }, 500);
+                } else {
+                    // Normale Bilder direkt preloaden
+                    const img = new Image();
+                    if (imgDetail.srcset) {
+                        img.srcset = imgDetail.srcset;
+                        img.sizes = '90vw';
+                    }
+                }
+            }, index * 300); // 300ms zwischen jedem Bild
         });
         
-        // Delayed batch for full resolution images
-        if (imageItems.length > preloadBatch) {
-            setTimeout(() => {
-                imageItems.slice(preloadBatch, maxPreload).forEach((item, index) => {
-                    setTimeout(() => {
-                        const img = new Image();
-                        img.src = item.url;
-                        if (item.srcset) {
-                            img.srcset = item.srcset;
-                        }
-                    }, index * 200); // Stagger loading by 200ms
-                });
-            }, 500); // Wait 500ms before starting full resolution preload
-        }
+        console.log(`Started preloading ${maxPreload} images (intelligent optimization)`);
     }
+}
+
+// Helper function to find DOM element by path
+function findItemElementByPath(path) {
+    const allItems = document.querySelectorAll('.finder-item[data-path]');
+    return Array.from(allItems).find(item => item.dataset.path === path);
+}
+
+// Update hover functionality for a single item
+function updateSingleItemHoverFunctionality(itemElement, item) {
+    if (!item.hover_thumbnail_url) return;
     
-    if (imageItems.length > 0 || hoverItems.length > 0) {
-        const startTime = performance.now();
-        const hoverCount = (window.innerWidth > 768 && !isTouchDevice()) ? hoverItems.length : 0;
-        console.log(`Smart preloading: ${hoverCount} hover images (desktop only), ${Math.min(imageItems.length, 10)} overlay images (throttled)`);
+    const isMobile = window.innerWidth <= 768;
+    const isTouch = isTouchDevice();
+    
+    if (!isMobile && !isTouch) {
+        let lastTouchTime = 0;
         
-        // Performance monitoring for debugging  
-        if (navigator.connection) {
-            const connection = navigator.connection;
-            console.log(`Network: ${connection.effectiveType}, Downlink: ${connection.downlink}Mbps, RTT: ${connection.rtt}ms`);
-        }
+        itemElement.addEventListener('touchstart', () => {
+            lastTouchTime = Date.now();
+        }, { passive: true });
+        
+        itemElement.onmouseenter = (e) => {
+            if (Date.now() - lastTouchTime < 500) return;
+            if (hideDelayTimeout) {
+                clearTimeout(hideDelayTimeout);
+                hideDelayTimeout = null;
+            }
+            showHoverImage(item.hover_thumbnail_url, item.hover_image_inset);
+        };
+        
+        itemElement.onmouseleave = (e) => {
+            if (Date.now() - lastTouchTime < 500) return;
+            isHoverActive = false;
+            hideDelayTimeout = setTimeout(() => {
+                if (hideDelayTimeout && !isHoverActive) {
+                    hideHoverImage();
+                }
+                hideDelayTimeout = null;
+            }, 50);
+        };
     }
+}
+
+// Legacy function - simplified for compatibility
+function preloadFolderImages(items) {
+    // Diese Funktion wird von der neuen intelligenten Preloading-Strategie ersetzt
+    // Bleibt aus Kompatibilitätsgründen bestehen, macht aber weniger
+    console.log('Legacy preloadFolderImages called - using new intelligent preloading instead');
 }
 
 function createImageOverlay() {
@@ -1019,7 +1126,11 @@ function hideImageOverlay() {
         overlay.classList.remove('active');
         setTimeout(() => {
             overlay.style.display = 'none';
-            // Nicht das Element entfernen - nur ausblenden für bessere Stabilität auf Mobile
+            // Entferne das Element komplett aus dem DOM auf mobilen Geräten
+            // ABER nur wenn es nicht mehr benötigt wird
+            if (window.innerWidth <= 768 && !overlay.classList.contains('active')) {
+                overlay.remove();
+            }
         }, 300);
     }
     // Reset overlay navigation
@@ -1157,7 +1268,11 @@ function hideTextOverlay() {
         overlay.classList.remove('active');
         setTimeout(() => {
             overlay.style.display = 'none';
-            // Nicht das Element entfernen - nur ausblenden für bessere Stabilität auf Mobile
+            // Entferne das Element komplett aus dem DOM auf mobilen Geräten
+            // ABER nur wenn es nicht mehr benötigt wird
+            if (window.innerWidth <= 768 && !overlay.classList.contains('active')) {
+                overlay.remove();
+            }
         }, 300);
     }
     // Reset overlay navigation
