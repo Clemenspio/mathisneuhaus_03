@@ -1040,6 +1040,19 @@ function showAboutPage() {
     const aboutOverlay = document.getElementById('aboutOverlay');
     const aboutText = document.getElementById('aboutText');
     
+    // Reset scroll position before showing (ensures it's always at top)
+    if (aboutOverlay) {
+        console.log('About scroll before reset:', aboutOverlay.scrollTop);
+        aboutOverlay.scrollTop = 0;
+        console.log('About scroll after reset:', aboutOverlay.scrollTop);
+        
+        // Force scroll reset with requestAnimationFrame for reliability
+        requestAnimationFrame(() => {
+            aboutOverlay.scrollTop = 0;
+            console.log('About scroll after RAF reset:', aboutOverlay.scrollTop);
+        });
+    }
+    
     document.body.style.overflow = 'hidden';
     finderContainer.classList.add('slide-down');
     aboutOverlay.style.display = 'flex';
