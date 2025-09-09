@@ -35,7 +35,7 @@
   }
   
   body {
-    background: #f5f5f5;
+    background: #000000;
     color: #333;
     line-height: 1.6;
     overflow: hidden; /* Prevent body scrolling */
@@ -402,9 +402,7 @@
       transform: scale(1.01);
     }
     
-    .finder-header:hover {
-      /* Kein Hintergrund mehr */
-    }
+    /* .finder-header:hover - no background styling needed */
     
     .finder-header:hover .site-title {
       color: #000000;
@@ -1051,11 +1049,14 @@
     opacity: 0;
   }
 
-  #backgroundImage1 {
-    opacity: 1; /* Normal visibility on desktop */
+  /* Desktop: backgroundImage1 visible by default */
+  @media (min-width: 769px) {
+    #backgroundImage1 {
+      opacity: 1;
+    }
   }
 
-  /* Mobile transparency bug fix: Only apply on mobile */
+  /* Mobile: All background images start hidden with transition */
   @media (max-width: 768px) {
     .background-image {
       opacity: 0; /* Start hidden on mobile */

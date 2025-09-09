@@ -9,6 +9,7 @@ let clickedPath = []; // Array to track clicked folders in path
 let activeColumnIndex = 0;
 let activeItemIndex = -1; // -1 means no item is selected
 let currentBackground = 1;
+let nextDesktopImage = null; // Cache for next desktop background image
 
 // Overlay navigation state
 let currentOverlayItems = [];
@@ -17,21 +18,14 @@ let overlayType = null; // 'image' or 'text'
 
 // Initialize the finder
 document.addEventListener('DOMContentLoaded', function() {
-    // Mobile transparency bug fix: Only apply fallback on mobile devices
+    // Mobile initialization: Ensure clean state for both background images
     if (window.innerWidth <= 768) {
-        const backgroundImages = document.querySelectorAll('.background-image');
-        if (backgroundImages.length > 0) {
-            // Fallback: show background after delay if not already handled
-            setTimeout(() => {
-                console.log('Mobile fallback: Checking if backgrounds need interface-ready class');
-                backgroundImages.forEach(bg => {
-                    if (!bg.classList.contains('interface-ready')) {
-                        console.log('Mobile fallback: Adding interface-ready to', bg.id);
-                        bg.classList.add('interface-ready');
-                    }
-                });
-            }, 1500); // Longer delay as ultimate fallback
-        }
+        const background1 = document.getElementById('backgroundImage1');
+        const background2 = document.getElementById('backgroundImage2');
+        
+        // Start with clean state - no interface-ready classes initially
+        if (background1) background1.classList.remove('interface-ready');
+        if (background2) background2.classList.remove('interface-ready');
     }
     
     loadBackgroundImage(true);
@@ -274,11 +268,19 @@ async function loadBackgroundImage(initial = false) {
         const data = await response.json();
         
         if (data.status === 'ok' && data.images && data.images.length > 0) {
-            const randomImage = data.images[Math.floor(Math.random() * data.images.length)];
+            let imageToUse;
+            
+            // Use pre-loaded next image if available, otherwise pick random
+            if (nextDesktopImage && !initial) {
+                imageToUse = nextDesktopImage;
+                nextDesktopImage = null; // Clear the cache
+            } else {
+                imageToUse = data.images[Math.floor(Math.random() * data.images.length)];
+            }
             
             // Preload the image to find the best source from srcset
             const img = new Image();
-            img.srcset = randomImage.srcset;
+            img.srcset = imageToUse.srcset;
             // The sizes attribute helps the browser to choose the right image from srcset
             img.sizes = '100vw'; 
 
@@ -290,29 +292,44 @@ async function loadBackgroundImage(initial = false) {
                 const oldBg = (currentBackground === 1) ? background1 : background2;
 
                 if (initial) {
-                    oldBg.style.backgroundImage = `url('${img.currentSrc || randomImage.url}')`;
+                    oldBg.style.backgroundImage = `url('${img.currentSrc || imageToUse.url}')`;
                     // Desktop: Set opacity normally, Mobile: Let CSS handle it with .interface-ready class
                     if (window.innerWidth > 768) {
                         oldBg.style.opacity = 1;
+                    } else {
+                        // Mobile: Add interface-ready class for CSS control
+                        oldBg.classList.add('interface-ready');
                     }
                 } else {
-                    newBg.style.backgroundImage = `url('${img.currentSrc || randomImage.url}')`;
-                    newBg.style.opacity = 0;
-                    newBg.style.transition = 'opacity 0.5s ease-in-out';
+                    newBg.style.backgroundImage = `url('${img.currentSrc || imageToUse.url}')`;
                     
-                    setTimeout(() => {
-                        newBg.style.opacity = 1;
-                        oldBg.style.opacity = 0;
+                    if (window.innerWidth > 768) {
+                        // Desktop: Use JavaScript opacity transitions
+                        newBg.style.opacity = 0;
+                        newBg.style.transition = 'opacity 0.5s ease-in-out';
+                        
+                        setTimeout(() => {
+                            newBg.style.opacity = 1;
+                            oldBg.style.opacity = 0;
+                            currentBackground = (currentBackground === 1) ? 2 : 1;
+                        }, 10);
+                    } else {
+                        // Mobile: Use CSS class transitions
+                        oldBg.classList.remove('interface-ready');
+                        newBg.classList.add('interface-ready');
                         currentBackground = (currentBackground === 1) ? 2 : 1;
-                    }, 10);
+                    }
                 }
             };
             
             // If the image fails to load, fallback to the original URL
             img.onerror = () => {
                 const background1 = document.getElementById('backgroundImage1');
-                background1.style.backgroundImage = `url('${randomImage.url}')`;
+                background1.style.backgroundImage = `url('${imageToUse.url}')`;
             };
+            
+            // Preload next desktop image for smoother transitions
+            preloadNextDesktopImage(data.images);
         }
     } catch (error) {
         console.error('Failed to load background image:', error);
@@ -365,8 +382,18 @@ function addColumn(title, items, hoverImageUrl = null, path = null) {
         applyTruncation();
     }, 100); // Nach Layout-Stabilisierung
 
-    // Preload all images in this folder
-    preloadFolderImages(items);
+    // Preload hover thumbnails for folders on desktop only (high priority)
+    if (window.innerWidth > 768) {
+        preloadHoverThumbnails(items);
+    }
+    
+    // Preload thumbnails and small images in this folder (medium priority)
+    preloadFolderThumbnails(items);
+    
+    // Preload large images and texts with lower priority (after everything else is ready)
+    setTimeout(() => {
+        preloadLargeContent(items);
+    }, 500); // Delay for low priority loading
 
     // "Docking" scroll logic
     requestAnimationFrame(() => {
@@ -826,26 +853,89 @@ function hideHoverImage() {
     }, 550); // 50ms mehr als CSS transition (500ms) für saubere Koordination
 }
 
-// Preload all images in a folder for faster switching
-function preloadFolderImages(items) {
-    const imageItems = items.filter(item => item.type === 'image' && item.url);
+// Preload thumbnails and small images for faster UI interaction (medium priority)
+function preloadFolderThumbnails(items) {
+    const imageItems = items.filter(item => item.type === 'image' && item.thumbnail);
     
-    // Limit preloading to avoid overwhelming the browser
-    const maxPreload = 10;
+    imageItems.forEach(item => {
+        const img = new Image();
+        img.src = item.thumbnail;
+        // Thumbnails werden im Browser Cache gespeichert für spätere Verwendung
+    });
+    
+    if (imageItems.length > 0) {
+        console.log(`Preloading ${imageItems.length} thumbnails from folder`);
+    }
+}
+
+// Preload large images and text content (lowest priority - after UI is ready)
+function preloadLargeContent(items) {
+    const imageItems = items.filter(item => item.type === 'image' && item.url);
+    const textItems = items.filter(item => item.type === 'textfile');
+    
+    // Limit large image preloading to avoid overwhelming the browser
+    const maxPreload = 5; // Reduced from 10 for lower priority
     const imagesToPreload = imageItems.slice(0, maxPreload);
     
+    // Preload large images
     imagesToPreload.forEach(item => {
         const img = new Image();
         img.src = item.url;
         if (item.srcset) {
             img.srcset = item.srcset;
         }
-        // Images werden im Browser Cache gespeichert für spätere Verwendung
+        // Large images werden im Browser Cache gespeichert
     });
     
-    if (imageItems.length > 0) {
-        console.log(`Preloading ${Math.min(imagesToPreload.length, imageItems.length)} images from folder`);
+    // Preload text content (very low priority)
+    textItems.slice(0, 3).forEach(item => {
+        fetch(`/api/textfile-content${item.path}`)
+            .then(response => response.json())
+            .catch(() => {}); // Silent fail for low-priority preloading
+    });
+    
+    if (imagesToPreload.length > 0 || textItems.length > 0) {
+        console.log(`Low-priority preloading: ${imagesToPreload.length} large images, ${Math.min(textItems.length, 3)} text files`);
     }
+}
+
+// Preload hover thumbnails for folders (desktop only)
+function preloadHoverThumbnails(items) {
+    // Desktop only - skip on mobile
+    if (window.innerWidth <= 768) {
+        return;
+    }
+    
+    const folderItems = items.filter(item => item.type === 'folder' && item.hover_thumbnail_url);
+    
+    folderItems.forEach(item => {
+        const img = new Image();
+        img.src = item.hover_thumbnail_url;
+        // Hover images werden im Browser Cache gespeichert
+    });
+    
+    if (folderItems.length > 0) {
+        console.log(`Preloading ${folderItems.length} hover thumbnails for folders`);
+    }
+}
+
+// Preload next desktop background image for smoother transitions
+function preloadNextDesktopImage(allImages) {
+    if (!allImages || allImages.length === 0) return;
+    
+    // Pick a random image for next transition
+    const randomImage = allImages[Math.floor(Math.random() * allImages.length)];
+    
+    // Store it for later use
+    nextDesktopImage = randomImage;
+    
+    // Preload it in the background
+    const img = new Image();
+    img.srcset = randomImage.srcset;
+    img.sizes = '100vw';
+    img.src = randomImage.url; // Fallback
+    
+    console.log('Preloading next desktop background image');
 }
 
 function createImageOverlay() {
@@ -1075,6 +1165,7 @@ function hideAboutPage() {
     finderContainer.classList.remove('slide-down');
     
     setTimeout(() => aboutOverlay.style.display = 'none', 300);
+    // Load new background image with transition (uses preloaded next image if available)
     loadBackgroundImage();
 }
 
