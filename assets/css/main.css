@@ -59,7 +59,7 @@
   }
   
   .finder-container {
-    background: #F2EEEB;
+    background: #F8F6F4;
     box-shadow: 10px 14px 14px rgba(0, 0, 0, 0.35), inset -3px 3px 3px rgba(255, 255, 255, 0.4), inset 3px -3px 3px #CFCBC7;
     border-radius: 27px;
     width: 94%;
@@ -110,9 +110,6 @@
     flex-shrink: 0;
     transition: background-color 0.12s ease, transform 0.12s ease;
     cursor: pointer;
-    will-change: transform, background-color;
-    -webkit-backface-visibility: hidden;
-    backface-visibility: hidden;
     position: relative;
   }
   
@@ -133,9 +130,6 @@
     color: #333333;
     cursor: pointer;
     transition: color 0.12s ease, transform 0.12s ease;
-    will-change: transform, color;
-    -webkit-backface-visibility: hidden;
-    backface-visibility: hidden;
   }
   
   .site-title:hover {
@@ -257,9 +251,6 @@
     transition: background-color 0.12s ease, transform 0.12s ease, color 0.12s ease;
     position: relative;
     overflow: hidden;
-    will-change: transform, background-color;
-    -webkit-backface-visibility: hidden;
-    backface-visibility: hidden;
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
@@ -388,9 +379,6 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    will-change: transform;
-    -webkit-backface-visibility: hidden;
-    backface-visibility: hidden;
   }
   
   .svg-icon {
@@ -399,9 +387,6 @@
     flex-shrink: 0;
     transition: transform 0.12s ease;
     filter: drop-shadow(0px 0px 2.36px rgba(0, 0, 0, 0.22));
-    will-change: transform;
-    -webkit-backface-visibility: hidden;
-    backface-visibility: hidden;
   }
  
   .image-thumbnail {
@@ -496,7 +481,7 @@
     border-radius: 3px;
   }
  
-  /* Text File Overlay - NEU HINZUFÜGEN */
+  /* Text File Overlay */
   .text-overlay {
     position: fixed;
     top: 0;
@@ -527,13 +512,20 @@
     flex-direction: column;
     position: relative;
     width: 93vw;
-    max-width: 600px; /* A4 Breite begrenzen */
-    height: calc(93vw * 1.414); /* A4 Verhältnis (1:1.414) */
-    max-height: 93vh; /* Maximal 93% der Bildschirmhöhe */
+    max-width: 600px;
+    height: calc(93vw * 1.414);
+    max-height: 93vh; /* Desktop: Original beibehalten */
     background: #FFFFFF;
     box-shadow: 0px 0px 34px rgba(0, 0, 0, 0.14);
     border-radius: 3px;
     overflow: hidden;
+  }
+
+  /* Mobile: Nur hier 80vh */
+  @media (max-width: 768px) {
+    .text-container {
+      max-height: 80vh;
+    }
   }
   
  
@@ -615,11 +607,6 @@
   
   /* Mobile-spezifische Anpassungen */
   @media (max-width: 768px) {
-    .text-overlay:not(.active) {
-      display: none !important;
-      pointer-events: none !important;
-    }
-    
     .text-content {
       -webkit-overflow-scrolling: touch;
       overscroll-behavior: contain;
@@ -728,6 +715,31 @@
   font-size: 21px !important;
   line-height: 29px !important;
   margin-bottom: 10px;
+}
+
+/* About Credits Link Styles - Desktop */
+.about-credits a {
+  color: #FFFFFF;
+  text-decoration: underline;
+  text-decoration-thickness: 3px;
+  text-underline-offset: 4px;
+  transition: opacity 0.2s ease;
+}
+
+.about-credits a:hover {
+  opacity: 0.8;
+}
+
+.about-credits a:visited {
+  color: #FFFFFF;
+}
+
+/* About Credits Link Styles - Mobile */
+@media (max-width: 768px) {
+  .about-credits a {
+    text-decoration-thickness: 2px;
+    text-underline-offset: 3px;
+  }
 }
 
 /* Hide scrollbar for about text */
@@ -866,7 +878,19 @@
   }
 
   #backgroundImage1 {
-    opacity: 1;
+    opacity: 1; /* Normal visibility on desktop */
+  }
+
+  /* Mobile transparency bug fix: Only apply on mobile */
+  @media (max-width: 768px) {
+    .background-image {
+      opacity: 0; /* Start hidden on mobile */
+      transition: opacity 0.5s ease;
+    }
+    
+    .background-image.interface-ready {
+      opacity: 1 !important; /* Force visibility when ready */
+    }
   }
 
   .finder-hover-bg {
@@ -1005,19 +1029,12 @@
     }
     
     /* Mobile Overlay-Anpassungen für korrekte Zentrierung */
-    .image-overlay.active,
-    .text-overlay.active {
+    .image-overlay,
+    .text-overlay {
       height: 100dvh; /* Dynamic viewport height für mobile Browser */
-      display: flex !important;
       align-items: center; /* Vertikal zentriert */
       justify-content: center; /* Horizontal zentriert */
       padding: 3.5vh 2vw; /* Abstand vom oberen/unteren Rand */
-    }
-    
-    .image-overlay:not(.active),
-    .text-overlay:not(.active) {
-      display: none !important;
-      pointer-events: none !important;
     }
     
     .image-container {
@@ -1034,11 +1051,7 @@
       left: auto;
       top: auto;
       transform: none; /* Keine transform-Zentrierung nötig */
-      max-height: 90dvh; /* Maximal 90% der dynamischen Viewport-Höhe */
-      width: 94vw;
-      max-width: 600px;
-      height: auto; /* Flexibel statt feste Höhe */
-      min-height: 60dvh; /* Mindesthöhe für Text */
+      /* Dimensions are now handled by the main mobile media query above */
     }
   }
   
@@ -1055,7 +1068,7 @@
     }
     
     .text-container {
-      max-height: 85dvh;
+      max-height: 80vh; /* Angepasst von 85dvh zu 80vh */
       width: 90vw;
       max-width: 700px; /* Auf iPad größer */
     }

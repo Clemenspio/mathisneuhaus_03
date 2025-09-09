@@ -560,7 +560,58 @@
         // Initialize the finder
         document.addEventListener('DOMContentLoaded', function() {
             console.log('Initializing finder...');
-            loadBackgroundImage();
+            
+            // Mobile transparency bug fix: Only apply on mobile devices
+            if (window.innerWidth <= 768) {
+                const initializeInterfaceWhenReady = () => {
+                    const finderInterface = document.querySelector('.finder-interface');
+                    const finderContainer = finderInterface?.querySelector('.finder-container');
+                    
+                    if (finderContainer) {
+                        // Force browser to recalculate styles
+                        finderContainer.offsetHeight;
+                        
+                        // Check if background styles are applied
+                        const styles = window.getComputedStyle(finderContainer);
+                        const bgColor = styles.backgroundColor;
+                        
+                        // Only show background if interface styles are ready
+                        if (bgColor && bgColor !== 'rgba(0, 0, 0, 0)' && bgColor !== 'transparent') {
+                            // Interface is ready - now load and show background
+                            loadBackgroundImage();
+                            
+                            // Show background after short delay to ensure image is loaded
+                            setTimeout(() => {
+                                const backgroundImages = document.querySelectorAll('.background-image');
+                                console.log('Mobile: Adding interface-ready class to', backgroundImages.length, 'background images');
+                                backgroundImages.forEach(bg => {
+                                    bg.classList.add('interface-ready');
+                                    console.log('Added interface-ready to:', bg.id);
+                                });
+                            }, 200); // Slightly longer delay for mobile
+                        } else {
+                            // Retry in 50ms if styles aren't ready
+                            setTimeout(initializeInterfaceWhenReady, 50);
+                            return;
+                        }
+                    } else {
+                        // Fallback: show background after maximum wait
+                        setTimeout(() => {
+                            console.log('Mobile: Fallback - loading background');
+                            loadBackgroundImage();
+                            const backgroundImages = document.querySelectorAll('.background-image');
+                            console.log('Mobile: Fallback - adding interface-ready to', backgroundImages.length, 'images');
+                            backgroundImages.forEach(bg => bg.classList.add('interface-ready'));
+                        }, 500);
+                    }
+                };
+                
+                // Start mobile initialization
+                initializeInterfaceWhenReady();
+            } else {
+                // Desktop: Normal initialization (unchanged)
+                loadBackgroundImage();
+            }
             
             // Add hover events for folders with thumbnails
             document.querySelectorAll('.finder-item').forEach(item => {

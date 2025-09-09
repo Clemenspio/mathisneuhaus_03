@@ -17,6 +17,23 @@ let overlayType = null; // 'image' or 'text'
 
 // Initialize the finder
 document.addEventListener('DOMContentLoaded', function() {
+    // Mobile transparency bug fix: Only apply fallback on mobile devices
+    if (window.innerWidth <= 768) {
+        const backgroundImages = document.querySelectorAll('.background-image');
+        if (backgroundImages.length > 0) {
+            // Fallback: show background after delay if not already handled
+            setTimeout(() => {
+                console.log('Mobile fallback: Checking if backgrounds need interface-ready class');
+                backgroundImages.forEach(bg => {
+                    if (!bg.classList.contains('interface-ready')) {
+                        console.log('Mobile fallback: Adding interface-ready to', bg.id);
+                        bg.classList.add('interface-ready');
+                    }
+                });
+            }, 1500); // Longer delay as ultimate fallback
+        }
+    }
+    
     loadBackgroundImage(true);
 
     const initialPath = window.location.pathname;
@@ -259,7 +276,10 @@ async function loadBackgroundImage(initial = false) {
 
                 if (initial) {
                     oldBg.style.backgroundImage = `url('${img.currentSrc || randomImage.url}')`;
-                    oldBg.style.opacity = 1;
+                    // Desktop: Set opacity normally, Mobile: Let CSS handle it with .interface-ready class
+                    if (window.innerWidth > 768) {
+                        oldBg.style.opacity = 1;
+                    }
                 } else {
                     newBg.style.backgroundImage = `url('${img.currentSrc || randomImage.url}')`;
                     newBg.style.opacity = 0;
@@ -347,7 +367,7 @@ function createItemElement(item, columnIndex) {
     itemDiv.onclick = () => handleItemClick(item, columnIndex);
     
     if (item.type === 'folder' && item.hover_thumbnail_url) {
-        // Desktop: Mouse events - ANGEPASST für Cross-Fade
+        // Desktop only: Mouse events for hover images
         itemDiv.onmouseenter = () => {
             // Ein geplantes Ausblenden abbrechen, falls vorhanden
             if (hideDelayTimeout) {
@@ -371,103 +391,7 @@ function createItemElement(item, columnIndex) {
             }, 50); // 50ms Verzögerung für Cross-Fade
         };
         
-        // Mobile: Touch events (tap and hold)
-        let touchHoldTimer = null;
-        let isHoverShowing = false;
-        let autoHideTimer = null;
-        let touchStartTime = 0;
-        let hasMoved = false;
-        
-        itemDiv.addEventListener('touchstart', (e) => {
-            // Modern approach: Use timestamps and movement detection
-            touchStartTime = Date.now();
-            hasMoved = false;
-            
-            touchHoldTimer = setTimeout(() => {
-                // Only show hover if we haven't moved and still holding
-                if (!hasMoved && Date.now() - touchStartTime >= 100) {
-                    showHoverImage(item.hover_thumbnail_url);
-                    isHoverShowing = true;
-                    // Note: showHoverImage already sets isHoverActive = true
-                    // No haptic feedback - user doesn't want it
-                    
-                    // Auto-hide after 3 seconds as fallback
-                    autoHideTimer = setTimeout(() => {
-                        if (isHoverShowing) {
-                            hideHoverImage();
-                            isHoverShowing = false;
-                        }
-                    }, 3000);
-                }
-            }, 100); // Show after 100ms hold - schneller für Mobile
-        }, { passive: true });
-        
-        itemDiv.addEventListener('touchend', (e) => {
-            const touchDuration = Date.now() - touchStartTime;
-            
-            // Always clear all timers first
-            if (touchHoldTimer) {
-                clearTimeout(touchHoldTimer);
-                touchHoldTimer = null;
-            }
-            if (autoHideTimer) {
-                clearTimeout(autoHideTimer);
-                autoHideTimer = null;
-            }
-            
-            // Always hide hover if showing
-            if (isHoverShowing) {
-                hideHoverImage();
-                isHoverShowing = false;
-                // Prevent click event if we were showing hover
-                e.preventDefault();
-                return;
-            }
-            
-            // Modern tap detection: short duration + no movement = intentional tap
-            if (!hasMoved && touchDuration < 300) { // Under 300ms = tap, not scroll
-                handleItemClick(item, columnIndex);
-            }
-            // If moved or held too long, don't open the item
-        }, { passive: false });
-        
-        // Also hide on touchcancel (when touch is interrupted)
-        itemDiv.addEventListener('touchcancel', (e) => {
-            // Clear all timers
-            if (touchHoldTimer) {
-                clearTimeout(touchHoldTimer);
-                touchHoldTimer = null;
-            }
-            if (autoHideTimer) {
-                clearTimeout(autoHideTimer);
-                autoHideTimer = null;
-            }
-            
-            if (isHoverShowing) {
-                hideHoverImage();
-                isHoverShowing = false;
-                // isHoverActive is set to false in hideHoverImage()
-            }
-        }, { passive: true });
-        
-        itemDiv.addEventListener('touchmove', (e) => {
-            // Any movement cancels intentional tap and hover
-            hasMoved = true;
-            
-            // Cancel hover on any movement
-            if (touchHoldTimer) {
-                clearTimeout(touchHoldTimer);
-                touchHoldTimer = null;
-            }
-            if (autoHideTimer) {
-                clearTimeout(autoHideTimer);
-                autoHideTimer = null;
-            }
-            if (isHoverShowing) {
-                hideHoverImage();
-                isHoverShowing = false;
-            }
-        }, { passive: true });
+        // No mobile touch events - hover images are desktop-only
     }
     
     const icon = getIcon(item.type, item);
@@ -708,6 +632,11 @@ let isHoverActive = false; // Flag to track hover state
 let pendingCleanupTimeouts = new Set(); // Track all cleanup timeouts
 
 function showHoverImage(imageUrl) {
+    // Mobile performance optimization: Don't load hover images on mobile
+    if (window.innerWidth <= 768) {
+        return; // Exit early on mobile devices
+    }
+    
     const hoverBg = document.getElementById('finderHoverBg');
     
     // Clear ALL pending timeouts to prevent interference
