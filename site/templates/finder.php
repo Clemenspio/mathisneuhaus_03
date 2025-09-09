@@ -164,18 +164,6 @@
                         $hoverImageUrl = '';
                         if ($child->hover_image()->isNotEmpty()) {
                             $hoverImageUrl = $child->hover_image()->toFile()->url();
-                        } elseif ($child->inherit_hover_image()->isTrue()) {
-                            // Get random hover image from subfolders
-                            $subfolders = $child->children();
-                            $hoverImages = [];
-                            foreach ($subfolders as $subfolder) {
-                                if ($subfolder->hover_image()->isNotEmpty()) {
-                                    $hoverImages[] = $subfolder->hover_image()->toFile()->url();
-                                }
-                            }
-                            if (!empty($hoverImages)) {
-                                $hoverImageUrl = $hoverImages[array_rand($hoverImages)];
-                            }
                         }
                         ?>
                         <a href="<?= $child->url() ?>" class="finder-item" 

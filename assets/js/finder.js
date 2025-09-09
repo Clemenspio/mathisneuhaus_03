@@ -437,7 +437,7 @@ function createItemElement(item, columnIndex) {
                 clearTimeout(hideDelayTimeout);
                 hideDelayTimeout = null;
             }
-            showHoverImage(item.hover_thumbnail_url);
+            showHoverImage(item.hover_thumbnail_url, item.hover_image_inset);
         };
         
         itemDiv.onmouseleave = () => {
@@ -746,7 +746,7 @@ let hideDelayTimeout = null; // Neue Variable für verzögertes Ausblenden
 let isHoverActive = false; // Flag to track hover state
 let pendingCleanupTimeouts = new Set(); // Track all cleanup timeouts
 
-function showHoverImage(imageUrl) {
+function showHoverImage(imageUrl, isInset = false) {
     // Mobile performance optimization: Don't load hover images on mobile
     if (window.innerWidth <= 768) {
         return; // Exit early on mobile devices
@@ -785,6 +785,13 @@ function showHoverImage(imageUrl) {
         inactiveLayer.classList.remove('fade-out');
         inactiveLayer.style.backgroundImage = `url('${imageUrl}')`;
         
+        // Apply inset class if needed
+        if (isInset) {
+            inactiveLayer.classList.add('inset');
+        } else {
+            inactiveLayer.classList.remove('inset');
+        }
+        
         // Start cross-fade immediately
         inactiveLayer.classList.add('active');
         activeLayer.classList.remove('active');
@@ -809,6 +816,13 @@ function showHoverImage(imageUrl) {
         layer1.style.backgroundImage = `url('${imageUrl}')`;
         layer1.classList.add('active'); // Always show if this is a new request
         
+        // Apply inset class if needed
+        if (isInset) {
+            layer1.classList.add('inset');
+        } else {
+            layer1.classList.remove('inset');
+        }
+        
         currentHoverImage = imageUrl;
     }
     // If same image is already showing and active, do nothing
@@ -820,6 +834,13 @@ function showHoverImage(imageUrl) {
             // Recovery: force show the image
             layer1.style.backgroundImage = `url('${imageUrl}')`;
             layer1.classList.add('active');
+            
+            // Apply inset class if needed
+            if (isInset) {
+                layer1.classList.add('inset');
+            } else {
+                layer1.classList.remove('inset');
+            }
         }
     }
 }
@@ -848,7 +869,7 @@ function hideHoverImage() {
         // Only clean up if hover is still inactive (no new hover started)
         if (!isHoverActive) {
             for (let layer of layers) {
-                layer.classList.remove('fade-out');
+                layer.classList.remove('fade-out', 'inset');
                 layer.style.backgroundImage = '';
             }
             currentHoverImage = null;

@@ -1098,6 +1098,17 @@
     transition: opacity 0.3s cubic-bezier(0.4, 0, 1, 1);
   }
   
+  /* Inset mode: 80% scale without cropping */
+  .finder-hover-bg .hover-layer.inset {
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-size: 80%;
+    background-position: center;
+    background-repeat: no-repeat;
+  }
+  
   /* Mobile Hover-Image Animation */
   @media (max-width: 768px) {
     .finder-hover-bg .hover-layer.mobile-tap {

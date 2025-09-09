@@ -44,9 +44,9 @@ columns:
         multiple: false
         template: hover-background-image  # WICHTIG: Template zuweisen
         help: This image will show as background when hovering over this folder
-      inherit_hover_image:
-        label: Inherit Background Image from Subfolders
+      hover_image_inset:
+        label: Inset Hover Image (80% size)
         type: toggle
-        text: If no background image is set, randomly select one from subfolders
+        text: Show hover image at 80% size with border instead of full-bleed
         default: false
-        help: When enabled, if this folder has no background image, it will randomly select one from any subfolder that has a background image set
+        help: When enabled, the hover image will be displayed at 80% size with a border frame instead of covering the full interface
