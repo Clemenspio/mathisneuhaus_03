@@ -686,6 +686,11 @@
   /* Text content links hover effect */
   .text-content a {
     transition: opacity 0.3s ease;
+    text-decoration-thickness: 2px !important;
+    text-underline-offset: 3px !important;
+    text-decoration-style: solid !important;
+    text-decoration-line: underline !important;
+    text-decoration-skip-ink: none !important;
   }
 
   .text-content a:hover {
@@ -858,8 +863,11 @@
 .about-credits a {
   color: #FFFFFF;
   text-decoration: underline;
-  text-decoration-thickness: 3px;
-  text-underline-offset: 4px;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 5px;
+  text-decoration-style: solid;
+  text-decoration-line: underline;
+  text-decoration-skip-ink: none;
   transition: opacity 0.2s ease;
 }
 
@@ -871,11 +879,19 @@
   color: #FFFFFF;
 }
 
-/* About Credits Link Styles - Mobile */
+/* About Page Link Styles - Mobile */
 @media (max-width: 768px) {
-  .about-credits a {
-    text-decoration-thickness: 2px;
-    text-underline-offset: 3px;
+  .about-content a,
+  .about-text a {
+    text-decoration-thickness: 3px !important;
+    text-underline-offset: 6px !important;
+  }
+  
+  /* Credits links need higher specificity to override above rule */
+  .about-text .about-credits a,
+  .about-content .about-credits a {
+    text-decoration-thickness: 2px !important;
+    text-underline-offset: 5px !important;
   }
 }
 
@@ -1272,6 +1288,11 @@
   .about-text a {
     color: #FFFFFF;
     text-decoration: underline;
+    text-decoration-thickness: 5px;
+    text-underline-offset: 11px;
+    text-decoration-style: solid;
+    text-decoration-line: underline;
+    text-decoration-skip-ink: none;
     transition: opacity 0.2s ease;
   }
   

@@ -974,10 +974,10 @@ function displayTextContent(content) {
 
     if (textContentString.trim() !== '') {
         // Process Kirby link syntax: (link: URL text: LINK TEXT)
-        textContentString = textContentString.replace(/\(link:\s*([^\s]+)\s+text:\s*([^)]+)\)/gi, '<a href="$1" style="color: #333333; text-decoration: underline;" target="_blank">$2</a>');
+        textContentString = textContentString.replace(/\(link:\s*([^\s]+)\s+text:\s*([^)]+)\)/gi, '<a href="$1" style="color: #333333; text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 3px; text-decoration-style: solid;" target="_blank">$2</a>');
         
         // Process email syntax: (email: EMAIL text: LINK TEXT)
-        textContentString = textContentString.replace(/\(email:\s*([^\s]+)\s+text:\s*([^)]+)\)/gi, '<a href="mailto:$1" style="color: #333333; text-decoration: underline;">$2</a>');
+        textContentString = textContentString.replace(/\(email:\s*([^\s]+)\s+text:\s*([^)]+)\)/gi, '<a href="mailto:$1" style="color: #333333; text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 3px; text-decoration-style: solid;">$2</a>');
         
         const paragraphs = textContentString.replace(/\r/g, '').split(/\n\n+/).filter(p => p.trim() !== '');
         textContent.innerHTML = paragraphs.map(p => `<p>${p.replace(/\n/g, '<br>')}</p>`).join('');
@@ -1075,8 +1075,8 @@ async function loadAboutContent() {
             let content = data.content;
             if (typeof content === 'object' && content.value) content = content.value;
             
-            content = content.replace(/\(email:\s*([^\s]+)\s+text:\s*([^)]+)\)/gi, '<a href="mailto:$1" style="color: #FFFFFF; text-decoration: underline; text-underline-offset: 8px;">$2</a>');
-            content = content.replace(/\(link:\s*([^\s]+)\s+text:\s*([^)]+)\)/gi, '<a href="$1" style="color: #FFFFFF; text-decoration: underline;" target="_blank">$2</a>');
+            content = content.replace(/\(email:\s*([^\s]+)\s+text:\s*([^)]+)\)/gi, '<a href="mailto:$1" style="color: #FFFFFF; text-decoration: underline; text-decoration-thickness: 5px; text-underline-offset: 11px;">$2</a>');
+            content = content.replace(/\(link:\s*([^\s]+)\s+text:\s*([^)]+)\)/gi, '<a href="$1" style="color: #FFFFFF; text-decoration: underline; text-decoration-thickness: 5px; text-underline-offset: 11px;" target="_blank">$2</a>');
             content = content.replace(/\n\n/g, '</p><p>').replace(/\n/g, '<br>');
             aboutText.innerHTML = `<p>${content}</p>`;
             
@@ -1086,8 +1086,8 @@ async function loadAboutContent() {
                 if (typeof credits === 'object' && credits.value) credits = credits.value;
                 
                 // Process Kirby link syntax in credits too
-                credits = credits.replace(/\(email:\s*([^\s]+)\s+text:\s*([^)]+)\)/gi, '<a href="mailto:$1" style="color: #FFFFFF; text-decoration: underline; text-underline-offset: 8px;">$2</a>');
-                credits = credits.replace(/\(link:\s*([^\s]+)\s+text:\s*([^)]+)\)/gi, '<a href="$1" style="color: #FFFFFF; text-decoration: underline;" target="_blank">$2</a>');
+                credits = credits.replace(/\(email:\s*([^\s]+)\s+text:\s*([^)]+)\)/gi, '<a href="mailto:$1" style="color: #FFFFFF; text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 5px;">$2</a>');
+                credits = credits.replace(/\(link:\s*([^\s]+)\s+text:\s*([^)]+)\)/gi, '<a href="$1" style="color: #FFFFFF; text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 5px;" target="_blank">$2</a>');
                 credits = credits.replace(/\n\n/g, '</p><p>').replace(/\n/g, '<br>');
                 aboutText.innerHTML += `<div class="about-credits"><p>${credits}</p></div>`;
             }
