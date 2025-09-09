@@ -170,6 +170,21 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Event Listener für Fenstergrößenänderung
     window.addEventListener('resize', debounce(applyTruncation, 150));
+    
+    // Mobile-specific fix: Reapply truncation on various events that might affect layout
+    if (window.innerWidth <= 768) {
+        // Listen for orientation changes on mobile
+        window.addEventListener('orientationchange', () => {
+            setTimeout(() => applyTruncation(), 200);
+        });
+        
+        // Additional safety: Reapply truncation when returning from overlays
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden) {
+                setTimeout(() => applyTruncation(), 100);
+            }
+        });
+    }
 });
 
 function snapToClosestColumn(container) {
@@ -326,6 +341,9 @@ function addColumn(title, items, hoverImageUrl = null, path = null) {
 
     const column = document.createElement('div');
     column.className = 'finder-column';
+    
+    // Markiere als neue Spalte für Animationen (alle Spalten)
+    column.classList.add('new-column');
 
     const itemsList = document.createElement('div');
     itemsList.className = 'items-list';
@@ -341,6 +359,11 @@ function addColumn(title, items, hoverImageUrl = null, path = null) {
     
     const parentColumnIndex = activeColumnIndex;
     columns.push({ title, items, element: column, hoverImageUrl, path });
+    
+    // Backup: Stelle sicher dass initial alle Elemente Ellipsis bekommen
+    setTimeout(() => {
+        applyTruncation();
+    }, 100); // Nach Layout-Stabilisierung
 
     // Preload all images in this folder
     preloadFolderImages(items);
@@ -352,6 +375,15 @@ function addColumn(title, items, hoverImageUrl = null, path = null) {
             left: targetScrollLeft,
             behavior: 'smooth'
         });
+        
+        // Entferne new-column Klasse nach Animationen (1 Sekunde)
+        if (column.classList.contains('new-column')) {
+            setTimeout(() => {
+                column.classList.remove('new-column');
+            }, 1000); // Nach allen Item-Animationen (max 0.75s + Buffer)
+        }
+        
+        // Ellipsis bereits korrekt gesetzt - keine weiteren Aufrufe nötig
     });
 }
 
@@ -405,6 +437,12 @@ function createItemElement(item, columnIndex) {
         </div>
     `;
     
+    // Apply truncation immediately after element creation
+    const itemNameElement = itemDiv.querySelector('.item-name');
+    if (itemNameElement) {
+        truncateFilenameDynamically(itemNameElement);
+    }
+    
     return itemDiv;
 }
 
@@ -432,15 +470,16 @@ async function handleItemClick(item, columnIndex) {
 
         updateAllColumnsForPath();
         
-        // Anwendung der dynamischen Kürzung nach dem Hinzufügen einer neuen Spalte
-        setTimeout(() => {
-            applyTruncation();
-        }, 50);
+        // Ellipsis bereits beim Spalten-Erstellen korrekt gesetzt
     } else if (item.type === 'externallink') {
         if (item.url) window.open(item.url, '_blank');
     } else if (item.type === 'textfile') {
+        // Präventiver Fix: Stabilisiere DOM-Zustand vor Overlay-Öffnung
+        applyTruncation();
         loadTextFileContent(item.path, item.name);
     } else if (item.type === 'image' && item.url) {
+        // Präventiver Fix: Stabilisiere DOM-Zustand vor Overlay-Öffnung
+        applyTruncation();
         showImageOverlay(item.url, item.srcset, item.path);
     } else if (item.url) {
         window.open(item.url, '_blank');
@@ -494,18 +533,63 @@ function removeColumnsAfter(index) {
     updateAllColumnsForPath();
 }
 
-// Dynamische Kürzung basierend auf verfügbarer Breite
+// ROBUSTE dynamische Kürzung mit Dimensions-Warten
 function truncateFilenameDynamically(element) {
-    // Stelle sicher, dass der Text nicht bereits gekürzt ist,
-    // um die ursprüngliche Länge zu erhalten.
     const originalFilename = element.dataset.originalFilename || element.textContent;
-    element.textContent = originalFilename; // Setze auf Original zurück für die Breitenmessung
     
-    if (element.scrollWidth > element.clientWidth) {
-        // Führe die Kürzung durch
-        const truncatedName = getTruncatedName(originalFilename, element.clientWidth);
-        element.textContent = truncatedName;
-    }
+    // Warte bis Element korrekte Dimensionen hat
+    waitForElementDimensions(element).then(() => {
+        // Immer Original setzen und neu berechnen
+        element.textContent = originalFilename;
+        
+        // Prüfe ob Kürzung nötig ist
+        if (element.scrollWidth > element.clientWidth) {
+            const truncatedName = getTruncatedName(originalFilename, element.clientWidth);
+            element.textContent = truncatedName;
+        }
+    });
+}
+
+// Moderne Lösung: Warte bis Element korrekte Dimensionen hat
+function waitForElementDimensions(element, maxWait = 1000) {
+    return new Promise((resolve) => {
+        // Wenn bereits Dimensionen vorhanden sind
+        if (element.offsetWidth > 0 && element.offsetHeight > 0) {
+            resolve();
+            return;
+        }
+        
+        // Timeout als Fallback
+        const timeout = setTimeout(() => {
+            resolve();
+        }, maxWait);
+        
+        // ResizeObserver für moderne Browser
+        if (window.ResizeObserver) {
+            const observer = new ResizeObserver((entries) => {
+                for (const entry of entries) {
+                    if (entry.target.offsetWidth > 0) {
+                        observer.disconnect();
+                        clearTimeout(timeout);
+                        resolve();
+                        break;
+                    }
+                }
+            });
+            observer.observe(element);
+        } else {
+            // Fallback für ältere Browser: polling
+            const checkDimensions = () => {
+                if (element.offsetWidth > 0) {
+                    clearTimeout(timeout);
+                    resolve();
+                } else {
+                    setTimeout(checkDimensions, 10);
+                }
+            };
+            checkDimensions();
+        }
+    });
 }
 
 function getTruncatedName(filename, availableWidth) {
@@ -829,6 +913,8 @@ function hideImageOverlay() {
             if (window.innerWidth <= 768) {
                 overlay.remove();
             }
+            // Reaktiver Fix: Stelle korrekten Ellipsis-Zustand nach Overlay-Schließung wieder her
+            applyTruncation();
         }, 300);
     }
     // Reset overlay navigation
@@ -928,6 +1014,8 @@ function hideTextOverlay() {
             if (window.innerWidth <= 768) {
                 overlay.remove();
             }
+            // Reaktiver Fix: Stelle korrekten Ellipsis-Zustand nach Overlay-Schließung wieder her
+            applyTruncation();
         }, 300);
     }
     // Reset overlay navigation
@@ -1012,16 +1100,31 @@ async function loadAboutContent() {
     }
 } 
 
-// Anwendung der dynamischen Kürzung
+// Globale Anwendung der dynamischen Kürzung - sync mit Browser-Rendering
 function applyTruncation() {
-    const fileItems = document.querySelectorAll('.item-name');
-    fileItems.forEach(item => {
-        // Speichere den originalen Dateinamen, falls noch nicht geschehen
-        if (!item.dataset.originalFilename) {
-            item.dataset.originalFilename = item.textContent;
-        }
-        truncateFilenameDynamically(item);
+    requestAnimationFrame(() => {
+        const fileItems = document.querySelectorAll('.item-name');
+        fileItems.forEach(item => {
+            // Speichere den originalen Dateinamen, falls noch nicht geschehen
+            if (!item.dataset.originalFilename) {
+                item.dataset.originalFilename = item.textContent;
+            }
+            truncateFilenameDynamically(item);
+        });
     });
+}
+
+// Global ResizeObserver für Layout-Änderungen
+if (window.ResizeObserver) {
+    const globalResizeObserver = new ResizeObserver(debounce(() => {
+        applyTruncation();
+    }, 150));
+    
+    // Beobachte den Finder-Container
+    const finderContainer = document.querySelector('.finder-container');
+    if (finderContainer) {
+        globalResizeObserver.observe(finderContainer);
+    }
 }
 
 // Debounce-Funktion zur Performance-Optimierung
@@ -1203,4 +1306,65 @@ function navigateOverlay(direction) {
         hideImageOverlay();
         loadTextFileContent(item.path, item.name);
     }
+}
+
+function goBack() {
+    if (columns.length <= 1) return; // Cannot go back from root
+
+    const columnsContainer = document.getElementById('finderColumns');
+    const targetColumnIndex = columns.length - 2;
+    const targetColumn = columns[targetColumnIndex].element;
+    const columnToRemove = columns[columns.length - 1].element;
+
+    // Scroll to the previous column
+    columnsContainer.scrollTo({
+        left: targetColumn.offsetLeft,
+        behavior: 'smooth'
+    });
+    
+    // Add class to animate removal
+    columnToRemove.classList.add('removing');
+
+    // Use a timeout to allow the scroll and fade animation to complete before removing the column
+    setTimeout(() => {
+        removeColumnsAfter(targetColumnIndex);
+
+        const parentPath = columns[targetColumnIndex].path;
+        history.pushState({ path: parentPath }, '', parentPath);
+
+        clickedPath.pop();
+        updatePathIndicators();
+        
+        // Mobile: Stelle sicher dass zurückkehrende Column stabil bleibt
+        if (window.innerWidth <= 768 && columns.length > 0) {
+            const returningColumn = columns[columns.length - 1].element;
+            if (returningColumn) {
+                // Entferne alle Animation-Klassen für Stabilität
+                returningColumn.classList.remove('new-column');
+                const items = returningColumn.querySelectorAll('.finder-item');
+                items.forEach(item => {
+                    item.style.opacity = '1';
+                    item.style.animation = 'none';
+                    item.style.transition = 'none';
+                });
+            }
+        }
+    }, 300); // Should match the transition duration
+}
+
+// Function to update only path indicators without re-rendering items
+function updatePathIndicators() {
+    columns.forEach((column, colIndex) => {
+        const items = column.element.querySelectorAll('.finder-item.content-item');
+        items.forEach((itemElement, itemIndex) => {
+            const item = column.items[itemIndex];
+            if (item && item.type === 'folder') {
+                if (clickedPath.includes(item.path)) {
+                    itemElement.classList.add('active-path');
+                } else {
+                    itemElement.classList.remove('active-path');
+                }
+            }
+        });
+    });
 } 

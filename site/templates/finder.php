@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= $page->title() ?> - Finder</title>
+    <link rel="preload" href="<?= url('assets/icons/Contact.svg') ?>" as="image" type="image/svg+xml">
     <link rel="stylesheet" href="<?= url('assets/css/main.css') ?>">
 </head>
 <body>

@@ -70,6 +70,56 @@
     position: relative;
   }
 
+  /* ==========================================================================
+     4. FINDER HEADER
+     ========================================================================== */
+  
+  /* Finder Header */
+  .finder-header {
+    background: transparent;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+    transition: background-color 0.12s ease, transform 0.12s ease;
+    cursor: pointer;
+    will-change: transform, background-color;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    position: relative;
+  }
+  
+  .finder-header::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 20px;
+    right: 20px;
+    height: 2px;
+    background: #D9D9D9;
+    border-radius: 1px;
+  }
+  
+  .site-title {
+    font-size: 20px;
+    font-weight: 500;
+    color: #333333;
+    cursor: pointer;
+    transition: color 0.12s ease, transform 0.12s ease;
+    will-change: transform, color;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    /* Mobile anti-flicker optimizations */
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    touch-action: manipulation;
+  }
+  
+  .site-title:hover {
+    color: #000000;
+  }
+
   /* Finder container slide animation */
 .finder-container {
   transition: transform 0.5s ease, opacity 0.3s ease;
@@ -203,6 +253,47 @@
     display: none;
   }
   
+  .finder-column.removing {
+    min-width: 0 !important;
+    opacity: 0;
+    padding-left: 0;
+    padding-right: 0;
+    border-width: 0;
+    overflow: hidden;
+    transition: all 0.3s ease;
+  }
+  
+  /* Bestehende Columns sollen NIEMALS animiert werden beim Zurückgehen */
+  .finder-column:not(.new-column):not(.removing) {
+    opacity: 1 !important;
+    transition: none !important;
+  }
+  
+  /* Mobile: Zusätzliche Stabilität für bestehende Columns */
+  @media (max-width: 768px) {
+    .finder-column:not(.new-column):not(.removing) .finder-item {
+      opacity: 1 !important;
+      animation: none !important;
+      transition: none !important;
+    }
+    
+    /* Chrome-spezifische Anti-Flicker Regeln */
+    .finder-column:not(.new-column):not(.removing) {
+      -webkit-backface-visibility: hidden !important;
+      backface-visibility: hidden !important;
+      -webkit-transform: translateZ(0) !important;
+      transform: translateZ(0) !important;
+      will-change: auto !important;
+    }
+    
+    .finder-column:not(.new-column):not(.removing) .finder-item {
+      -webkit-backface-visibility: hidden !important;
+      backface-visibility: hidden !important;
+      -webkit-transform: translateZ(0) !important;
+      transform: translateZ(0) !important;
+    }
+  }
+  
   /* ==========================================================================
      5. ITEM LIST STYLES
      ========================================================================== */
@@ -256,6 +347,10 @@
     -ms-user-select: none;
     user-select: none;
     -webkit-touch-callout: none;
+    /* Mobile anti-flicker optimizations */
+    -webkit-tap-highlight-color: transparent;
+    -webkit-appearance: none;
+    touch-action: manipulation;
   }
   
 
@@ -339,13 +434,14 @@
     font-weight: 500;
     margin-bottom: 2px;
     line-height: 1.3;
-    /* Dynamic truncation will be handled by JavaScript */
+    /* JavaScript handles ALL truncation - no CSS ellipsis interference */
     white-space: nowrap;
     overflow: hidden;
-    text-overflow: ellipsis; /* Fallback, falls JS fehlschlägt */
+    text-overflow: clip; /* Never show CSS ellipsis */
     display: block;
     width: 100%; /* Füllt den verfügbaren Platz in der Spalte aus */
     transition: transform 0.12s ease;
+    word-break: keep-all; /* Verhindert Umbrüche in der Mitte von Wörtern */
   }
   
   .finder-item-title {
@@ -400,6 +496,11 @@
     border: 2px solid #F2F2F2;
     background: #FFFFFF;
     box-shadow: 0px 0px 2.36px rgba(0, 0, 0, 0.22);
+    /* Mobile anti-flicker optimizations */
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    touch-action: manipulation;
+    -webkit-user-drag: none;
   }
   
 
@@ -610,6 +711,42 @@
     .text-content {
       -webkit-overflow-scrolling: touch;
       overscroll-behavior: contain;
+    }
+    
+    /* Anti-flicker rules for mobile */
+    * {
+      -webkit-tap-highlight-color: transparent !important;
+      -webkit-touch-callout: none !important;
+    }
+    
+    .finder-item,
+    .finder-header,
+    .site-title,
+    .item-content,
+    .item-name,
+    .image-thumbnail,
+    .svg-icon {
+      -webkit-tap-highlight-color: transparent !important;
+      -webkit-touch-callout: none !important;
+      -webkit-user-select: none !important;
+      user-select: none !important;
+      touch-action: manipulation !important;
+    }
+    
+    /* Prevent text selection flicker */
+    .finder-item * {
+      -webkit-user-select: none !important;
+      -moz-user-select: none !important;
+      -ms-user-select: none !important;
+      user-select: none !important;
+    }
+    
+    /* Stabilize rendering on mobile */
+    .finder-item {
+      -webkit-backface-visibility: hidden !important;
+      backface-visibility: hidden !important;
+      -webkit-transform: translateZ(0) !important;
+      transform: translateZ(0) !important;
     }
   }
   
@@ -1146,4 +1283,61 @@
   .about-content a:visited,
   .about-text a:visited {
     color: #FFFFFF;
+  }
+  
+  /* ==========================================================================
+     ITEM ANIMATIONS
+     ========================================================================== */
+  
+  /* Animation nur für Items in NEUEN Spalten - wird per JavaScript gesteuert */
+  .finder-column.new-column .finder-item {
+    opacity: 0;
+    animation: fadeInItem 0.3s ease forwards;
+  }
+  
+  /* Back-Button soll keine Animation auslösen */
+  .finder-column.new-column .finder-item.finder-back-button {
+    opacity: 1;
+    animation: none;
+  }
+  
+  /* Bestehende Spalten: Keine Animation */
+  .finder-column:not(.new-column) .finder-item {
+    opacity: 1;
+    animation: none;
+  }
+  
+  /* Auf Mobile: Keine Animation für Back-Button */
+  @media (max-width: 768px) {
+    .finder-column.new-column .finder-item.finder-back-button {
+      opacity: 1;
+      animation: none;
+    }
+  }
+  
+  .finder-column.new-column .finder-item:nth-child(1) { animation-delay: 0.05s; }
+  .finder-column.new-column .finder-item:nth-child(2) { animation-delay: 0.1s; }
+  .finder-column.new-column .finder-item:nth-child(3) { animation-delay: 0.15s; }
+  .finder-column.new-column .finder-item:nth-child(4) { animation-delay: 0.2s; }
+  .finder-column.new-column .finder-item:nth-child(5) { animation-delay: 0.25s; }
+  .finder-column.new-column .finder-item:nth-child(6) { animation-delay: 0.3s; }
+  .finder-column.new-column .finder-item:nth-child(7) { animation-delay: 0.35s; }
+  .finder-column.new-column .finder-item:nth-child(8) { animation-delay: 0.4s; }
+  .finder-column.new-column .finder-item:nth-child(9) { animation-delay: 0.45s; }
+  .finder-column.new-column .finder-item:nth-child(10) { animation-delay: 0.5s; }
+  .finder-column.new-column .finder-item:nth-child(11) { animation-delay: 0.55s; }
+  .finder-column.new-column .finder-item:nth-child(12) { animation-delay: 0.6s; }
+  .finder-column.new-column .finder-item:nth-child(13) { animation-delay: 0.65s; }
+  .finder-column.new-column .finder-item:nth-child(14) { animation-delay: 0.7s; }
+  .finder-column.new-column .finder-item:nth-child(15) { animation-delay: 0.75s; }
+  
+  @keyframes fadeInItem {
+    0% {
+      opacity: 0;
+      transform: translateY(5px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }

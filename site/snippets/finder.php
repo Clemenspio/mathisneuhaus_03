@@ -49,7 +49,7 @@
                     </div>
                 </div>
                 <div class="item-icon">
-                    <img src="/assets/icons/Mathis Neuhaus Contact.svg" alt="Mathis Neuhaus" class="svg-icon">
+                    <img src="/assets/icons/Contact.svg" alt="Mathis Neuhaus" class="svg-icon" loading="eager">
                 </div>
             </div>
         </div>
