@@ -293,9 +293,13 @@ async function loadBackgroundImage(initial = false) {
 
                 if (initial) {
                     oldBg.style.backgroundImage = `url('${img.currentSrc || imageToUse.url}')`;
-                    // Desktop: Set opacity normally, Mobile: Let CSS handle it with .interface-ready class
+                    
                     if (window.innerWidth > 768) {
-                        oldBg.style.opacity = 1;
+                        // Desktop: Smooth fade-in for first image too
+                        oldBg.style.opacity = 0;
+                        setTimeout(() => {
+                            oldBg.style.opacity = 1;
+                        }, 10);
                     } else {
                         // Mobile: Add interface-ready class for CSS control
                         oldBg.classList.add('interface-ready');

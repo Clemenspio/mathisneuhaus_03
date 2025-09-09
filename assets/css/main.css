@@ -1049,20 +1049,13 @@
     opacity: 0;
   }
 
-  /* Desktop: backgroundImage1 visible by default */
-  @media (min-width: 769px) {
-    #backgroundImage1 {
-      opacity: 1;
-    }
+  /* All background images start with transition for smooth fade-ins */
+  .background-image {
+    transition: opacity 0.5s ease;
   }
 
-  /* Mobile: All background images start hidden with transition */
+  /* Mobile: CSS class-based control */
   @media (max-width: 768px) {
-    .background-image {
-      opacity: 0; /* Start hidden on mobile */
-      transition: opacity 0.5s ease;
-    }
-    
     .background-image.interface-ready {
       opacity: 1 !important; /* Force visibility when ready */
     }
